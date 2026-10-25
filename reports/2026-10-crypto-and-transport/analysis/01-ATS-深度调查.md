@@ -239,6 +239,24 @@ ATS 实际上是开着的。** 很多报告在这里出错。
 | 全部 50 个样本 | **38 / 50（76%）** |
 | 其中政府/官媒类 | **14 / 15** |
 
+> **「全局关闭」的判据必须写清**（否则数字会因口径不同而对不上）：
+> 只统计 `NSAppTransportSecurity` 字典里 **`NSAllowsArbitraryLoads = true`** 的样本。
+>
+> 实测 50 个样本的完整分布：
+>
+> | 形态 | 数量 | 是否算「全局关闭」 |
+> |---|---|---|
+> | `NSAllowsArbitraryLoads = true` | **38** | ✅ 是 |
+> | `NSAllowsArbitraryLoads = false` + 域名例外 | 8 | ❌ 否——只对列出的域名开口 |
+> | 只有 `NSAllowsArbitraryLoadsInWebContent` | 2 | ❌ 否——**只在 WebView 内**放开，不是全局 |
+> | `NSAllowsArbitraryLoads = false`（无例外） | 1 | ❌ 否——ATS 全开 |
+> | 只有 `NSPinnedDomains` | 1 | ❌ 否——那是证书固定，不是放开 |
+>
+> **如果换一种口径**（把 `NSAllowsArbitraryLoadsInWebContent` 也算作「某种程度的放开」），
+> 数字会变成 **40/50**；若再把域名例外也算上，是 **48/50**。
+> **本报告采用最严口径（38/50）**——只算真正的全局开关，
+> 因为它才是本 App 那种「所有连接都不受约束」的情形。
+
 ⇒ 若「关 ATS = 表达主权立场」，那 76% 的样本（含 Chrome、Bitdefender、
 Kaspersky、Twitter 这些**非中国** App）都在表达同一个立场——显然不成立。
 

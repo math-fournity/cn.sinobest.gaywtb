@@ -56,7 +56,8 @@
 
 **问题 1：加密用户密码的钥匙，就明明白白写在 App 里。**
 
-这个 App 在用户登录、重置密码、修改密码时，会先把密码、手机号、验证码"加密"再上传。
+这个 App 在**登录**时会先把**密码**"加密"再上传；在**重置密码**和**修改密码**时，
+会把**密码、手机号、验证码**三项都加密再上传。
 但用来加密的那把钥匙，**直接以纯文本形式写在 App 的网页文件里**。
 任何拿到这个安装包的人，用记事本打开就能看到、复制走。
 
@@ -183,7 +184,7 @@
 
 | 主张 | 证据形态 |
 |---|---|
-| 密钥硬编码 | 文件 `p__login__Login.js`，**字节偏移 9485**，可直接 `grep` |
+| 密钥硬编码 | 文件 `p__login__Login.js`，**密钥字面量 @9485**（`Utf8.parse(` @9473，函数 `Q` @9453），可直接 `grep` |
 | 三个业务入口 | 每一环的调用点与网络端点，**七环调用链闭合**（证明不是死代码） |
 | 测试密钥被取用 | **指令级**：在 `checkKey:` 函数里，有两条取址指令确实指向这两串，且阳性对照通过 |
 
@@ -262,7 +263,7 @@
 
 | # | 主张 | 证据强度 | 法定责任主体 | 技术参与方（**非归责**） |
 |---|---|---|---|---|
-| **A1** | H5 层硬编码 **AES-256 密钥**（`385f33cb…9081ab7`），用于加密**登录密码、手机号、验证码**；模式 **ECB**（无 IV，同明文恒同密文） | 代码级（`p__login__Login.js`@9485 等 3 处实例） | **运营者：公安部科技信息化局** | 中科江南（包名 + 自研 Cordova 插件为证；**该段代码作者未证**） |
+| **A1** | H5 层硬编码 **AES-256 密钥**（`385f33cb…9081ab7`），用于加密**登录密码、手机号、验证码**；模式 **ECB**（无 IV，同明文恒同密文） | 代码级（`p__login__Login.js`@9473 等 3 处实例） | **运营者：公安部科技信息化局** | 中科江南（包名 + 自研 Cordova 插件为证；**该段代码作者未证**） |
 | **A2** | 同一把密钥服务**三个业务入口**：登录 `/api/fwmh/mobile/login`、重置密码与修改密码 `/api/user/password` | 代码级（逐 effect 核对） | **运营者：公安部科技信息化局** | 同上 |
 | **A3** | **全局关闭 ATS**（`NSAllowsArbitraryLoads=true`，无任何更窄的键）⇒ 允许明文 HTTP，**并移除 TLS 1.2 下限、前向保密要求、证书强度检查** | 配置级 + Apple 官方文档 | **运营者：公安部科技信息化局** | 同上 |
 | **A4** | 包内含云从 SDK **自述测试密钥** `cw_test_aes_key_`/`cw_test_sm4_key_`，且被 `checkKey:` **实际取用** | 指令级（xref 经 `__cfstring`，阳性对照 PASS） | **运营者：公安部科技信息化局** | 云从科技（SDK 在场；**密钥常量写入者未证**） |
@@ -433,7 +434,7 @@ Q = e => {
 
 | # | 文件 | 偏移 | 服务的功能 |
 |---|---|---|---|
-| 1 | `www/p__login__Login.js` | 9485（+9465 parse） | **登录**（加密 password） |
+| 1 | `www/p__login__Login.js` | **9485**（字面量起点；`Utf8.parse(` @9473、函数 `Q` @9453） | **登录**（加密 password） |
 | 2 | `www/umi.js` | **423347** | **重置密码**（加密三字段） |
 | 3 | `www/umi.js` | **769557** | **修改密码**（加密三字段） |
 
@@ -442,8 +443,8 @@ Q = e => {
 | 入口 | 调用链 | 端点 | 加密字段 |
 |---|---|---|---|
 | **登录** | `Login.js` @9617 `X` handler → `o.password = Q(o.password)` → `login/tryLogin` | `POST /api/fwmh/mobile/login` | **仅 password** |
-| **重置密码** | `umi.js` `resetPossword` @425347 → `S(phone)/S(validateCode)/S(password)` + `encryption:"1"` | `POST /api/user/password` | 三字段 |
-| **修改密码** | `p__grzx__Xgmm.js` @10827 → `grzx/changePass` → `umi.js` @771557 `Y(...)` + `encryption:"1"` | `POST /api/user/password` | 三字段 |
+| **重置密码** | `umi.js` `resetPossword` @425339 → `S(phone)/S(validateCode)/S(password)` + `encryption:"1"` | `POST /api/user/password` | 三字段 |
+| **修改密码** | `p__grzx__Xgmm.js` @10822 → `grzx/changePass` → `umi.js` @771549 `Y(...)` + `encryption:"1"` | `POST /api/user/password` | 三字段 |
 
 > **一处容易搞错的地方**：`login` model 里的 `tryLogin` effect **不加密**，
 > 它把 payload 原样透传给 service。加密发生在**组件层**的 `X` handler。
@@ -746,7 +747,7 @@ NIST SP 800-57 Part 1 Rev. 5 §8.1.4（印刷页 92）：
 
 **阳性对照 3/3 PASS** —— 这是阴性结论可信的前提。
 
-**结果：1 个不同值 / 4 个实例**（`385f33cb…ab7`）。
+**结果：1 个不同值 / 3 个代码实例**（`385f33cb…ab7`；`umi.js` 2 处 + `p__login__Login.js` 1 处，`grep -o | wc -l` 实测）。
 
 ### 5.1 撤回：那个 64 字符 Base64 串不是密钥
 
@@ -893,17 +894,20 @@ GB/T 38636-2020 确实在推动关键信息基础设施使用国密。所以**�
 unzip -q cn.sinobest.gaywtb-1.2.28-Decrypted.ipa -d out/
 APP="out/Payload/公安一网通办.app"
 
-# 密钥的 3 处代码实例。
+# ── 第一步：自己把密钥取出来，存进变量 ──────────────────────────
+# 本报告全文的密钥是脱敏的（385f33cb…9081ab7），不能直接拿去 grep。
+# 先用下面这条从包里取真值——这是本报告 §关于密钥 给出的「30 秒自取」方法。
+KEY=$(grep -o '[0-9a-f]\{32\}' "$APP/www/p__login__Login.js" | head -1)
+echo "取到密钥长度: ${#KEY}（应为 32）"
+
+# ── 第二步：用变量统计实例数 ────────────────────────────────────
 # 必须用 grep -o | wc -l 统计出现次数，不能用 grep -c ——
 # 压缩后的 umi.js 整个文件只有一行，grep -c 数的是行数，会恒为 1。
-echo -n "Login.js: "; grep -o "385f33cb…9081ab7" \
-    "$APP/www/p__login__Login.js" | wc -l    # 期望 1
-echo -n "umi.js:   "; grep -o "385f33cb…9081ab7" \
-    "$APP/www/umi.js" | wc -l                # 期望 2
+echo -n "Login.js: "; grep -o "$KEY" "$APP/www/p__login__Login.js" | wc -l   # 期望 1
+echo -n "umi.js:   "; grep -o "$KEY" "$APP/www/umi.js" | wc -l               # 期望 2
 
-# 加密函数与 ECB 模式
-grep -o 'Utf8.parse("385f33cb…9081ab7")[^;]*' \
-     "$APP/www/p__login__Login.js"
+# ── 第三步：确认加密函数与 ECB 模式 ─────────────────────────────
+grep -o "Utf8.parse(\"$KEY\")[^;]*" "$APP/www/p__login__Login.js"
 
 # 入口一：登录（只加密 password）
 grep -o 'o\.password=Q(o\.password)' "$APP/www/p__login__Login.js"

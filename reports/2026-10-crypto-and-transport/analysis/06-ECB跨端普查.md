@@ -234,7 +234,7 @@ ECB 是**最简单的模式**：不需要 IV、不需要随机数、加密结果
 | **交管12123**（19 个历史版本） | `AES/ECB/NoPadding`、`AES/ECB/PKCS5Padding` | **有壳** |
 | **《国家网络身份认证》**（[Android 篇](https://github.com/math-fournity/cn.cyberIdentity.certification)） | `SM4/ECB/PKCS5PADDING` | **有壳** |
 | **电子证件**（`com.ctid.open`） | `AES/ECB/PKCS5Padding`、`AES/ECB/PKCS7Padding` | 无壳 |
-| **国家政务服务平台** | `AES/ECB/NoPadding`、`AES/ECB/PKCS5Padding` | 无壳 |
+| **国家政务服务平台** | `AES/ECB/NoPadding`、`AES/ECB/PKCS5Padding` | **有壳** |
 | **公安110**（`chinaonekey`） | `AES/ECB/PKCS5Padding` | 无壳 |
 | 出入境、微警、反诈、国门公安、国家反诈AI | 仅 `RSA/ECB/*` 或 `DES/ECB/*`（库自带） | — |
 
@@ -311,15 +311,15 @@ DES-ECB 6 处、AES-ECB 1 处、算法运行期决定 2 处。
 
 #### 削弱一：多数样本有壳，静态证不了「真的被调用」
 
-| App | 壳状态 | 能否验证调用 |
+| App | 壳状态（dex 头实测） | 能否验证调用 |
 |---|---|---|
-| 交管12123 | **有壳**（17.5MB dex 只有 5 个 class_defs，data 区仅 14KB） | ❌ 代码在加密岛内 |
-| 《国家网络身份认证》 | **有壳** | ❌ 同上 |
-| 电子证件 | 无壳 | ✅ 可验证 |
-| 国家政务服务平台 | 无壳 | ✅ 可验证 |
+| 交管12123 | **有壳**：`classes.dex` **30.0 MiB / class_defs=1 / data_size=4,696 B** | ❌ 代码在加密岛内 |
+| 《国家网络身份认证》 | **有壳**：`classes.dex` **16.8 MiB / class_defs=5 / data_size=14,824 B** | ❌ 同上（但 native 层可验，见 §4.1b） |
+| 电子证件 | 无壳（dex 可反编译） | ✅ 可验证 |
+| 国家政务服务平台 | **有壳**：`classes.dex` **20.4 MiB / class_defs=55 / data_size=32,908 B** | ❌ 代码在加密岛内 |
 
 **「dex 字符串池里有 `SM4/ECB/PKCS5PADDING`」≠「代码真的用了它」。**
-对 6 个有壳样本，本报告**只能主张「该变换名存在于包内」**，不能主张「实际调用」。
+对 7 个有壳样本，本报告**只能主张「该变换名存在于包内」**，不能主张「实际调用」。
 
 #### 削弱二：唯一能验证的那个，恰好是**死代码**
 

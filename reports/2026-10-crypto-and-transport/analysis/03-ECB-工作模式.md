@@ -219,7 +219,11 @@ python3 ../code/ecb_demo.py
 # 方式二：只用 openssl，手工验证
 # 注意：该 App 的钥是 32 个 ASCII 字符，不是 32 位 hex。
 #       openssl -K 要 hex，必须先转换；直接传 ASCII 会变成 AES-128。
-KEYHEX=$(printf '%s' '385f33cb…9081ab7' | xxd -p -c 256)
+# 本报告密钥是脱敏的，先从 IPA 里取真值（见主报告 §关于密钥 的「30 秒自取」）
+KEY=$(grep -o '[0-9a-f]\{32\}' \
+  "out/Payload/公安一网通办.app/www/p__login__Login.js" | head -1)
+echo ${#KEY}        # 应为 32
+KEYHEX=$(printf '%s' "$KEY" | xxd -p -c 256)
 echo ${#KEYHEX}     # 应为 64
 
 # 同一密码两次加密 → 密文相同

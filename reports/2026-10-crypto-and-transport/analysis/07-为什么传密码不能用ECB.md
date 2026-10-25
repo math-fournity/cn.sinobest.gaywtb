@@ -252,7 +252,12 @@ cwIbisSM4CheckLiveness      ← 活体检测链路
 python3 ../code/ecb_demo.py
 
 # 手工验证（用本 App 的真实密钥）
-KEYHEX=$(printf '%s' '385f33cb…9081ab7' | xxd -p -c 256)
+# 本报告密钥是脱敏的，先从 IPA 里取真值
+KEY=$(grep -o '[0-9a-f]\{32\}' \
+  "out/Payload/公安一网通办.app/www/p__login__Login.js" | head -1)
+echo ${#KEY}        # 应为 32
+KEYHEX=$(printf '%s' "$KEY" | xxd -p -c 256)
+echo ${#KEYHEX}     # 应为 64（这一行是自检，别省——省了会用零填充静默算错）
 printf '123456' | openssl enc -aes-256-ecb -K "$KEYHEX" -nosalt | xxd -p -c 256
 printf '123456' | openssl enc -aes-256-ecb -K "$KEYHEX" -nosalt | xxd -p -c 256
 # 两次输出完全相同 ⇒ 攻击者用计数器就能统计密码分布
