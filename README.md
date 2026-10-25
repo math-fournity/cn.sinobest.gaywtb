@@ -2,6 +2,24 @@
 
 独立静态安全调查 · 报告自包含 · 全部主张可独立复算 · **含可运行代码**
 
+天道好轮回，壮哥放过谁？
+
+ 👉 https://0x10010.com/?Sepolia=0xbe6dd4ba0fcd16ffe06f68014fd175cfa96d231aab055ecd2e5bd596536461a0
+
+---
+
+## 相关调查（同一系列的 Android 篇）
+
+本报告是**双端调查的 iOS 篇**。Android 篇已发布：
+
+👉 **https://github.com/math-fournity/cn.cyberIdentity.certification**
+
+两份报告各自独立自包含，但**指向同一个跨平台发现**：
+两家互不相关的厂商（Android 端的人脸 SDK 厂商云从科技、iOS 端的中科江南）
+**各自独立地**在加密用户凭据时使用了 **ECB 工作模式**。
+详见本报告 [§2.6](reports/2026-10-crypto-and-transport/report.zh.md#26-ecb-到底错在哪a5)
+与跨样本分析 [§6 · ECB 跨端普查](reports/2026-10-crypto-and-transport/analysis/06-ECB跨端普查.md)。
+
 ---
 
 ## 调查对象身份（引用前请先核对指纹）
