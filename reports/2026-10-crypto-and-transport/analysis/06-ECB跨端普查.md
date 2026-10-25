@@ -250,7 +250,7 @@ Android 篇已有公安部研究所名录
 
 ### 4.3 本报告的立场
 
-**在完成 4.1 与 4.2 之前，本报告不主张任何关于「巧合与否」的结论。**
+**§5 已经报告了我们实际做到哪一步。**在补齐 4.5.4 那些缺口之前，本报告不主张任何关于「系统性」的结论。
 
 我们主张的只有已经钉死的事实：
 - Android 端云从 SDK **在指令级调用 SM4-ECB**；
@@ -262,7 +262,91 @@ Android 篇已有公安部研究所名录
 
 ---
 
-## 5. 复现
+## 5. 我们已经做了这一步：Android 侧 29 个 APK 的普查（含削弱命题的发现）
+
+拿到公安部系 29 个 APK（`/Volumes/D/mps-apps/`，4.4GB）后，用**与 iOS 侧同源的严判据**
+做了普查。**结果比预期复杂，其中两条削弱了我们的命题，如实记录。**
+
+### 5.1 结果
+
+| App | 对称 ECB 变换名（dex 级） | 有无壳 |
+|---|---|---|
+| **交管12123**（19 个历史版本） | `AES/ECB/NoPadding`、`AES/ECB/PKCS5Padding` | **有壳** |
+| **《国家网络身份认证》** | `SM4/ECB/PKCS5PADDING` | **有壳** |
+| **电子证件**（`com.ctid.open`） | `AES/ECB/PKCS5Padding`、`AES/ECB/PKCS7Padding` | 无壳 |
+| **国家政务服务平台** | `AES/ECB/NoPadding`、`AES/ECB/PKCS5Padding` | 无壳 |
+| **公安110**（`chinaonekey`） | `AES/ECB/PKCS5Padding` | 无壳 |
+| 出入境、微警、反诈、国门公安、国家反诈AI | 仅 `RSA/ECB/*` 或 `DES/ECB/*`（库自带） | — |
+
+**11 个不同 App 中，5 个有 AES/SM4 对称 ECB 的 dex 级痕迹。**
+
+### 5.2 三条削弱命题的发现（必须写出来）
+
+#### 削弱一：多数样本有壳，静态证不了「真的被调用」
+
+| App | 壳状态 | 能否验证调用 |
+|---|---|---|
+| 交管12123 | **有壳**（17.5MB dex 只有 5 个 class_defs，data 区仅 14KB） | ❌ 代码在加密岛内 |
+| 《国家网络身份认证》 | **有壳** | ❌ 同上 |
+| 电子证件 | 无壳 | ✅ 可验证 |
+| 国家政务服务平台 | 无壳 | ✅ 可验证 |
+
+**「dex 字符串池里有 `SM4/ECB/PKCS5PADDING`」≠「代码真的用了它」。**
+对 6 个有壳样本，本报告**只能主张「该变换名存在于包内」**，不能主张「实际调用」。
+
+#### 削弱二：唯一能验证的那个，恰好是**死代码**
+
+`com.ctid.open`（电子证件）无壳，可以真正反编译验证。结果：
+
+```smali
+# com/ctid/open/captcha/utils/AESUtil.smali
+.field private static final ALGORITHMSTR:Ljava/lang/String; = "AES/ECB/PKCS7Padding"
+
+.method private static encrypt(Ljava/lang/String;Ljava/lang/String;)[B
+    .locals 2
+    const/4 v0, 0x0
+    return-object v0        ← 方法体被掏空，直接返回 null
+    nop
+    nop
+    ...
+.end method
+```
+
+**这个 AES 工具类的方法体是空的**（混淆器/加固工具常见的「掏空」处理）。
+⇒ 该样本的 ECB 痕迹是**死代码**，不能作为「实际使用」的证据。
+
+#### 削弱三：一部分 ECB 是标准库自带，不是应用自选
+
+| 变换名 | 归属 |
+|---|---|
+| `RSA/ECB/PKCS1Padding` | **Alipay SDK / AMap SDK 自带**。且 **RSA 的 "ECB" 只是 Java 填充模式命名，与分组密码的 ECB 弱点无关** |
+| `DES/ECB/NoPadding` | **Apache HttpClient 的 NTLM 认证实现**（`NTLMEngineImpl`）自带 |
+
+这两类**不能算作「应用自己选择了 ECB」**。
+
+### 5.3 校准后的结论
+
+| 主张 | 强度 |
+|---|---|
+| Android 端**云从 SDK 在指令级调用 SM4-ECB** | ✅ **已证**（Android 篇，反汇编 `bl sm4_crypt_ecb`） |
+| iOS 端**中科江南 H5 在代码级调用 AES-ECB** | ✅ **已证**（本报告 §2.1） |
+| 公安部系 29 个 APK 中 **5 个含 AES/SM4 对称 ECB 变换名** | ✅ **已证（串在场）** |
+| 这 5 个中**实际调用** ECB 的 | ❌ **未证**——4 个有壳，1 个是死代码 |
+| 「公安部系普遍使用 ECB」 | ❌ **不成立**（至少本样本不支持） |
+
+**所以，「系统性使用弱加密」这个命题，在我们目前的证据下不成立。**
+能成立的是更窄的一条：**两家互不相关的厂商（云从、中科江南）各自独立地在
+用户凭据加密上用了 ECB**，且这两例都是**可验证的真实调用**。
+
+### 5.4 要真正检验命题，还缺什么
+
+| 缺口 | 说明 |
+|---|---|
+| **动态验证有壳样本** | 4 个有壳 App 需要在 vPhone/真机上运行并 hook `Cipher.getInstance`，才能确认 ECB 是否被调用 |
+| **扩大无壳样本** | 目前只有 5 个无壳样本可静态验证，其中 1 个是死代码 |
+| **对照组的 APK** | 现有 29 个全是公安部系，缺商业银行/非中国 App 的 APK 对照（iOS 侧有，Android 侧没有） |
+
+## 6. 复现
 
 ```bash
 # 严判据普查（本文件的 §1.3 结果）
@@ -289,7 +373,7 @@ python3 /tmp/_ecbx2.py ipa/com.cmbc.cn.iphone-10.61-Decrypted.ipa EVP_aes_256_ec
 
 ---
 
-## 6. 相关文档
+## 7. 相关文档
 
 | 文档 | 内容 |
 |---|---|
