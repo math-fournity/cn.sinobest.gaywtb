@@ -1,0 +1,206 @@
+[
+ {
+  "key": "ats-technical-exactness-and-sovereignty-hypothesis",
+  "summary": "ATS is a *policy layer* over standard IETF TLS, not a crypto implementation. NSAllowsArbitraryLoads=true does NOT turn TLS off and does NOT disable certificate validation: it (a) permits cleartext HTTP, (b) removes ATS's TLS 1.2 floor, forward-secrecy requirement, and SHA-256/RSA-2048/ECC-256 cert-strength checks, while default server-trust evaluation keeps running and invalid certs remain a hard failure. So an https-only app does lose security, but narrowly: it can now negotiate TLS 1.0/1.1 and non-PFS RSA suites, accept weaker certs, and follow an https→http redirect. Crucially for the user's sovereignty hypothesis: ATS-off grants *zero* 国密 capability — SM2/SM3/SM4 require bundling GmSSL/铜锁, and Apple's CryptoKit/Security expose no ShangMi primitives. I verified in the actual IPA that the app has NSAllowsArbitraryLoads=true with NO NSExceptionDomains, NO NSAllowsArbitraryLoadsInWebContent, NO NSPinnedDomains — so the iOS 10+ \"ignored if a narrower key is present\" trap does not apply and the key is fully effective, including for its Cordova/WKWebView layer. Apple's own docs confirm the key is not open to abuse-silence: justification is mandatory and may trigger extra review — yet this app is distributed on the App Store, so Apple accepted it.",
+  "findings": [
+   {
+    "claim": "Q1 — NSAllowsArbitraryLoads=true does NOT turn off TLS. It is additive: it permits cleartext HTTP while HTTPS still works and is still validated. Apple states both halves explicitly in one paragraph.",
+    "evidence": "\"Disabling ATS means that unsecured HTTP connections are allowed. HTTPS connections are also allowed, and are still subject to default server trust evaluation, as described in `Ensure the Network Server Meets Minimum Requirements`. However, extended security checks—like requiring a minimum Transport Layer Security (TLS) protocol version—are disabled. Without ATS, you're also free to loosen the default server trust requirements, as described in Performing manual server trust authentication.\"",
+    "source": "https://developer.apple.com/documentation/bundleresources/information-property-list/nsapptransportsecurity/nsallowsarbitraryloads",
+    "confidence": "high"
+   },
+   {
+    "claim": "Q1 scope caveat that most analyses get wrong: on iOS 10+/macOS 10.12+, the key is SILENTLY IGNORED (default NO) if any of NSAllowsArbitraryLoadsForMedia / NSAllowsArbitraryLoadsInWebContent / NSAllowsLocalNetworking is also present. A blanket claim of \"ATS fully off\" is only correct if none of those narrower keys exist.",
+    "evidence": "\"In iOS 10 and later and macOS 10.12 and later, the value of the NSAllowsArbitraryLoads key is ignored—and the default value of `NO` used instead—if any of the following keys are present in your app's Information Property List file:\" [list: NSAllowsArbitraryLoadsForMedia, NSAllowsArbitraryLoadsInWebContent, NSAllowsLocalNetworking]",
+    "source": "https://developer.apple.com/documentation/bundleresources/information-property-list/nsapptransportsecurity/nsallowsarbitraryloads",
+    "confidence": "high"
+   },
+   {
+    "claim": "Verified on the actual sample (cn.sinobest.gaywtb-1.2.28): Info.plist contains NSAllowsArbitraryLoads=true and NOTHING else under NSAppTransportSecurity — no NSExceptionDomains, no NSAllowsArbitraryLoadsInWebContent, no NSAllowsLocalNetworking, no NSPinnedDomains. Therefore the iOS 10+ ignore-trap does NOT apply and the key is fully effective, including for the app's Cordova/WKWebView layer. MinimumOSVersion=11.0.",
+    "evidence": "plutil dump of Payload/公安一网通办.app/Info.plist: `<key>NSAppTransportSecurity</key><dict><key>NSAllowsArbitraryLoads</key><true/></dict>` — grep for NSExceptionDomains/NSPinnedDomains/NSAllowsLocalNetworking/NSAllowsArbitraryLoadsInWebContent/NSRequiresCertificateTransparency returned only `NSAllowsArbitraryLoads`. MinimumOSVersion string = 11.0.",
+    "source": "local: /Users/aurolafly/bank-ios-app-enhancement/ipa/cn.sinobest.gaywtb-1.2.28-Decrypted.ipa",
+    "confidence": "high"
+   },
+   {
+    "claim": "Q2 — an https-only app with ATS off DOES lose security, but not \"TLS is off\". Three concrete losses: (1) the TLS 1.2 floor is gone, so TLS 1.0/1.1 (deprecated iOS 15, still supported) can be negotiated; (2) the forward-secrecy requirement is gone, so non-PFS RSA key-transport suites become negotiable; (3) the SHA-256 / RSA-2048 / ECC-256 certificate-strength checks are gone. Default trust evaluation survives.",
+    "evidence": "\"...extended security checks—like requiring a minimum Transport Layer Security (TLS) protocol version—are disabled.\" Plus Apple's ATS requirements list: \"The server certificate must be signed with either a ... RSA key of at least 2048 bits, or an ECC key of at least 256 bits\"; \"The certificate must use ... SHA-2 with a digest length ... of at least 256 bits\"; \"The connection must use ... TLS protocol version 1.2 or later\"; \"The link must support perfect forward secrecy (PFS) through ECDHE key exchange.\"",
+    "source": "https://developer.apple.com/documentation/security/preventing-insecure-network-connections",
+    "confidence": "high"
+   },
+   {
+    "claim": "Q3 — YES, ATS-off changes which cipher suites can be negotiated on https. ATS narrows the set to forward-secret suites (ECDHE_ECDSA_AES / ECDHE_RSA_AES, GCM or CBC); with the forward-secrecy requirement off, RSA_AES (non-PFS, RSA key transport) is added back.",
+    "evidence": "\"By default, ATS limits cipher selection to include only suites that provide forward secrecy\" — specifically \"ECDHE_ECDSA_AES and ECDHE_RSA_AES in either GCM or CBC mode\". \"If an app disables the forward secrecy requirement for a domain, RSA_AES is added to the set of available ciphers.\"",
+    "source": "https://support.apple.com/guide/security/tls-security-sec100a75d12/web",
+    "confidence": "high"
+   },
+   {
+    "claim": "Q3 nuance — the TLS-version floor does NOT fall all the way to SSL 3. Some protections live below ATS in the OS stack and survive ATS being off: SSL 3 is disallowed by CFNetwork, SHA-1 certs are disallowed from iOS 11, and RSA keys under 2048 bits are rejected. So ATS-off re-enables TLS 1.0/1.1 and non-PFS suites, not ancient SSLv3/RC4.",
+    "evidence": "\"CFNetwork disallows SSL 3, and apps that use WebKit (such as Safari) are prohibited from making an SSL 3 connection.\" / \"From iOS 11 ... SHA-1 certificates are no longer allowed for TLS connections unless trusted by the user.\" / \"Certificates with RSA keys shorter than 2048 bits are also disallowed.\" / \"The RC4 symmetric cipher suite is deprecated in iOS 10 and macOS 10.12.\"",
+    "source": "https://support.apple.com/guide/security/tls-security-sec100a75d12/web",
+    "confidence": "high"
+   },
+   {
+    "claim": "Q4 — CONFIRMED: ATS-off does NOT disable certificate validation or trust evaluation. Invalid certificates remain a hard failure. What changes is that the app is now *free to* loosen trust itself in code (manual server-trust auth) without ATS objecting — the guardrail is removed, but validation is not switched off by the key.",
+    "evidence": "\"HTTPS connections are also allowed, and are still subject to default server trust evaluation.\" / \"Invalid certificates always result in a hard failure and no connection.\" / \"Without ATS, you're also free to loosen the default server trust requirements, as described in Performing manual server trust authentication.\"",
+    "source": "https://developer.apple.com/documentation/bundleresources/information-property-list/nsapptransportsecurity/nsallowsarbitraryloads",
+    "confidence": "high"
+   },
+   {
+    "claim": "Q5 — ATS and pinning are separable. Declarative pinning is itself an ATS sub-key (NSPinnedDomains lives inside NSAppTransportSecurity), while code-level pinning in a URLSession delegate is entirely independent of ATS and works fine with ATS off. Verified in this sample: the app implements NO pinning of either kind.",
+    "evidence": "NSPinnedDomains hierarchy path is .../NSAppTransportSecurity/NSPinnedDomains; Apple: \"Pinning a certificate for a given domain has no impact on other security requirements or configuration.\" In the sample, grep of the main binary for SecTrustEvaluate / SecTrustSetPolicies / SecPolicyCreateSSL / serverTrust / pinnedPins all returned 0; the only hits were Cordova's stock delegate selector strings `URLSession:didReceiveChallenge:completionHandler:` and `connection:canAuthenticateAgainstProtectionSpace:`.",
+    "source": "https://developer.apple.com/documentation/bundleresources/information-property-list/nsapptransportsecurity/nspinneddomains",
+    "confidence": "high"
+   },
+   {
+    "claim": "Q6 — Apple's own eligible-justification list does NOT include \"private CA\" or \"internal server\". A privately-run CA is not a valid reason to disable ATS, because ATS explicitly accepts a root \"installed on the client by the user or a system administrator\". The genuine legitimate categories are: a third-party server you don't control that can't do secure connections; devices that can't be upgraded, reached by public host names; embedded web content from many sources; and encrypted media with no personal info.",
+    "evidence": "\"The anchor certificate must be part of the client operating system, as indicated in HT204132, or be installed on the client by the user or a system administrator.\" / Eligible justifications: \"The app must connect to a server managed by another entity that doesn't support secure connections.\" \"The app must support connecting to devices that cannot be upgraded to use secure connections, and that must be accessed using public host names.\" \"The app must display embedded web content from a variety of sources, but can't use a class supported by the web content exception.\" \"The app loads media content that is encrypted and that contains no personalized information.\"",
+    "source": "https://developer.apple.com/documentation/security/preventing-insecure-network-connections",
+    "confidence": "high"
+   },
+   {
+    "claim": "Q7 — Apple requires justification and warns of extra review. This is documented, not folklore.",
+    "evidence": "\"You must supply a justification during App Store review if you set the key's value to `YES`, as described in `Provide Justification for Exceptions`. Use this key with caution because it significantly reduces the security of your app. In most cases, it's better to upgrade your servers to meet the requirements imposed by ATS, or at least to use a narrower exception.\" / \"Adding certain ATS exceptions to your app's Information Property List file requires you to provide justification, and might trigger additional App Store review for your app.\"",
+    "source": "https://developer.apple.com/documentation/bundleresources/information-property-list/nsapptransportsecurity/nsallowsarbitraryloads",
+    "confidence": "high"
+   },
+   {
+    "claim": "Q7 empirical counterpoint from our own evidence: whatever the justification requirement is on paper, this government app IS distributed through the App Store with ATS globally off. So Apple accepted it in practice — the review gate did not stop it.",
+    "evidence": "Repo evidence/findings/003d §5: iTunes lookup API, trackId=1597440048, sellerName = \"Science and Technology Information Bureau of the Public Security Ministry of China\", artistName = 公安部科技信息化局, releaseDate 2021-12-06, currentVersionReleaseDate 2023-11-20. Sample is an App Store decrypt dump, so it passed review.",
+    "source": "local: findings/003d-SOP06定罪八问结账-发布级证据补齐.md §5",
+    "confidence": "high"
+   },
+   {
+    "claim": "Is ATS \"American private crypto\"? No — it is a policy layer over standard IETF TLS and X.509. The cipher suites, protocol versions, and PKI are all public international standards; ATS adds no proprietary cryptography of its own. But there is one honest caveat: Apple publishes the legacy coreTLS source, while Network.framework — which the modern URLSession TLS path uses — is not published as open source.",
+    "evidence": "ATS \"requires that network connections made by your app are secured by the Transport Layer Security (TLS) protocol using reliable certificates and ciphers\" with requirements expressed entirely in IETF/X.509 terms (TLS 1.2+, ECDHE, AES-128/256, SHA-256+, RSA-2048/ECC-256, X.509 chain to a trusted anchor). github.com/apple-oss-distributions/coreTLS returns HTTP 200 and contains lib/ source; github.com/apple-oss-distributions/Network returns HTTP 404.",
+    "source": "https://github.com/apple-oss-distributions/coreTLS",
+    "confidence": "high"
+   },
+   {
+    "claim": "DECISIVE for the sovereignty hypothesis: ATS-off cannot deliver 国密. Apple's CryptoKit and Security frameworks expose no SM2/SM3/SM4 primitives, so 国密 requires vendoring GmSSL/铜锁/GMObjC. I verified the sample contains ZERO 国密 symbols, and its production server runs TLS 1.3 + AES-256-GCM under a Polish (Certum) root CA. So disabling ATS bought no cryptographic sovereignty whatsoever.",
+    "evidence": "Repo evidence/gaywtb_ats_analysis.md §2: grep of the main binary for SM2 / SM3 / SM4 / GMTLS / gmssl / GmSSL / TLCP / GB\\/T 38636 → all 0 (H5-layer SM2/SM3 hits verified as random Base64 substrings). §5: openssl s_client to ywtb.mps.gov.cn → Protocol TLSv1.3, Cipher TLS_AES_256_GCM_SHA384, chain TrustAsia → TrustAsia Root → Certum Trusted Network CA (C=PL), Verify return code 0 (ok).",
+    "source": "local: evidence/gaywtb_ats_analysis.md §2 and §5",
+    "confidence": "high"
+   },
+   {
+    "claim": "The sovereignty argument, taken seriously, makes the finding WORSE rather than excusing it: if the motive were 密码主权, Chinese regulation creates a positive duty to use 国密 (密码法 + 政务信息系统密评 + GB/T 39786-2021), not merely a permission to switch ATS off. The app did neither — it disabled the guardrail and used neither 国密 nor a domestic root CA.",
+    "evidence": "密码法 (2019-10-26, effective 2020-01-01): operators of CII required by law to use 商用密码 and undergo 商用密码应用安全性评估. 《政务信息系统密码应用与安全性评估工作指南》 published 2020-09-16 by 国家密码管理局 for 非涉密国家政务信息系统. GB/T 39786-2021《信息安全技术 信息系统密码应用基本要求》 released 2021-03-19, effective 2021-10-01, supersedes GM/T 0054-2018. TLCP/国密 TLS is specified by GM/T 0024《SSL VPN技术规范》 (revised GM/T 0024-2023).",
+    "source": "https://www.oscca.gov.cn/sca/xwdt/2020-09/16/content_1060781.shtml",
+    "confidence": "medium"
+   },
+   {
+    "claim": "ATS-off also removes a real https-only risk that is easy to overlook: because ATS is evaluated per-request including redirects, an https:// endpoint that 302-redirects to http:// will now be followed. For a Cordova/WKWebView hybrid like this one, that means third-party or compromised web content can pull cleartext resources even though every first-party URL is https.",
+    "evidence": "Mechanism derived from Apple's documented behavior (ATS governs each URL-loading-system request; NSAllowsArbitraryLoads permits cleartext for all domains not in NSExceptionDomains) rather than an explicit redirect quote. Sample confirms the WebView surface is live: main binary contains CDVWebViewEngine (12 hits), WKWebView (35), CDVViewController (4).",
+    "source": "https://developer.apple.com/documentation/security/preventing-insecure-network-connections",
+    "confidence": "medium"
+   }
+  ],
+  "could_not_verify": [
+   "Whether Apple's declarative NSPinnedDomains pinning is still enforced when NSAllowsArbitraryLoads=YES. Apple documents each key separately and never states this interaction; the answer is not derivable from the docs I retrieved. Moot for this sample (no NSPinnedDomains present, no code-level pinning either).",
+   "Which TLS implementation the modern URLSession path actually uses. Network.framework source is not published (apple-oss-distributions/Network → HTTP 404), and Apple does not document the stack. Only the legacy coreTLS source is published. So 'the TLS stack is auditable source-for-source' is NOT a claim I can make.",
+   "Whether this specific app ever actually negotiated TLS 1.0/1.1 or a non-PFS suite at runtime. Static analysis shows the *capability* is unlocked; no dynamic window (0e / vPhone) has been run, so no observed downgrade.",
+   "Whether an https→http redirect actually occurs in this app's production flows. It is a permitted capability under ATS-off, not an observed event.",
+   "The justification text (if any) submitted in App Review for this app, and whether extra review was triggered. Not observable from the IPA or public metadata; only the outcome (it is on the App Store) is observable.",
+   "Whether this 政务信息系统 is formally in 密评 scope and at which 等保 level. 密码法/密评 duties attach to CII and 政务信息系统, but the system's 定级 is not public and I did not find a filing that names this app.",
+   "No publicly documented case was found of a government/regulated app that disabled ATS for a *stated and accepted* legitimate technical reason. Apple's eligible-justification categories are documented; an actual published review decision is not."
+  ],
+  "bottom_line_for_report": "ATS is a policy layer over standard IETF TLS and X.509, not a proprietary crypto scheme, so 'not wanting the American security stack' does not, on its own, justify switching it off. The precise technical fact is that NSAllowsArbitraryLoads=true permits cleartext HTTP and removes ATS's TLS 1.2 floor, forward-secrecy requirement and certificate-strength checks, while leaving default certificate validation fully in force — so the app is not 'unencrypted by default', but its security floor drops, and an https-only app can still be downgraded via a redirect. Decisively, ATS-off confers zero 国密 capability: SM2/SM3/SM4 must be vendored (Apple ships no ShangMi primitives), and this app contains no 国密 implementation at all while its production endpoint runs TLS 1.3 / AES-256-GCM under a Polish Certum root. A report can therefore say honestly that the cryptographic-sovereignty explanation was considered and is contradicted by three independent technical facts, while explicitly not claiming to know the real motive — which static evidence cannot establish — and while noting the genuinely legitimate reasons Apple recognises for ATS exceptions (a third-party server that cannot do secure connections, or unupgradable devices reached by public host name). What the report must not say is that ATS is American contraband, or that disabling it made the app use Chinese cryptography: it did neither."
+ },
+ {
+  "key": "ATS-technical-nature-and-china-crypto-regime",
+  "summary": "ATS is not a cryptographic protocol at all — it is a policy gate enforced in URLSession/CFNetwork that refuses connections which fail to negotiate ordinary IETF TLS 1.2+ (RFC 5246 / RFC 8446) with AES-128/256, ECDHE forward secrecy, RSA≥2048 or ECC≥256, and SHA-256+ certificates. Every cipher suite ATS accepts is an IANA-registered IETF suite (RFC 5289 / RFC 8422); Apple invented no cipher, no key exchange, no trust anchor, no escrow and no backdoor. ATS does not pin certificates by default and does not force US CAs — it uses the single global iOS root store, which already contains Chinese CAs (CFCA EV ROOT, GDCA TrustAUTH R5 ROOT). The one real caveat is that Apple unilaterally curates the trust store and reserves the right to tighten ATS requirements without breaking binary compatibility — a governance lever, not a cryptographic one. China's own regime does genuinely push SM2/SM3/SM4 (密码法 Art. 27, 商用密码管理条例, GB/T 38636-2020 TLCP) for CII and graded-protection systems, so the user's instinct has a legitimate kernel — but it does not rescue the ATS-off defence, because ATS sits above the crypto layer and does not even apply to the low-level APIs a TLCP stack would use, so disabling ATS yields exactly one capability: plaintext HTTP.",
+  "findings": [
+   {
+    "claim": "ATS is a policy enforcement layer, not a cryptographic protocol. It imposes minimum requirements on connections made through URLSession/CFNetwork and blocks those that fail. It is not Apple's own crypto invention.",
+    "evidence": "Apple: \"a networking security feature called App Transport Security (ATS) improves privacy and data integrity for all apps and app extensions. It does this by requiring that network connections made by your app are secured by the Transport Layer Security (TLS) protocol using reliable certificates and ciphers. ATS blocks connections that don't meet minimum security requirements.\" And: \"ATS requires all of these things, and then provides extended security checks\" — i.e. it layers checks on top of standard TLS, it does not replace TLS.",
+    "source": "https://developer.apple.com/documentation/security/preventing-insecure-network-connections",
+    "confidence": "high"
+   },
+   {
+    "claim": "ATS requires plain IETF TLS 1.2 or later. Apple's own documentation names the RFCs explicitly: RFC 2818 (HTTP over TLS) and RFC 5246 (TLS 1.2). TLS 1.3 is RFC 8446.",
+    "evidence": "Apple archive: \"With ATS enabled, HTTP connections must use HTTPS (RFC 2818). ... ATS employs the Transport Layer Security (TLS) protocol version 1.2 (RFC 5246).\" Current doc: \"The connection must use Transport Layer Security (TLS) protocol version 1.2 or later.\" RFC 5246 header: \"The Transport Layer Security (TLS) Protocol Version 1.2 ... Category: Standards Track, August 2008\"; RFC 8446: \"Internet Engineering Task Force (IETF) ... The Transport Layer Security (TLS) Protocol Version 1.3 ... Category: Standards Track, August 2018\".",
+    "source": "https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CocoaKeys.html",
+    "confidence": "high"
+   },
+   {
+    "claim": "ATS's specific requirements beyond plain TLS are: TLS 1.2+; AES-128 or AES-256 only; ECDHE forward secrecy; leaf cert RSA≥2048 or ECC≥256; SHA-256 or stronger signature; X.509 chain to a trust anchor in the OS store. No proprietary element is added.",
+    "evidence": "\"The connection must use either the AES-128 or AES-256 symmetric cipher. The link must support perfect forward secrecy (PFS) through Elliptic Curve Diffie-Hellman Ephemeral (ECDHE) key exchange.\" / \"The leaf server certificate must be signed with one of the following types of keys: RSA key with a length of at least 2048 bits; ECC key with a size of at least 256 bits\" / \"the leaf server certificate hashing algorithm must be Secure Hash Algorithm 2 (SHA-2) with a digest length ... of at least 256\".",
+    "source": "https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CocoaKeys.html",
+    "confidence": "high"
+   },
+   {
+    "claim": "Every cipher suite ATS accepts is an IANA-registered IETF suite from RFC 5289 / RFC 8422 — not an Apple-defined cipher. The full ATS list is 11 ECDHE+AES suites (ECDSA or RSA, GCM or CBC).",
+    "evidence": "Apple's list includes TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, etc. IANA TLS registry: \"0xC0,0x2C\",TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,Y,Y,[RFC 5289]; \"0xC0,0x2F\",TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,Y,Y,[RFC 5289]; \"0xC0,0x24\",TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,Y,N,[RFC 5289]; \"0xC0,0x13\",TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,Y,N,[RFC 8422].",
+    "source": "https://www.iana.org/assignments/tls-parameters/tls-parameters-4.csv",
+    "confidence": "high"
+   },
+   {
+    "claim": "ATS adds no Apple-specific cryptography, no proprietary cipher, no key escrow and no backdoor. Its only 'extra' requirements are minimum key sizes, hash strength and forward secrecy — all conservative mainstream practice also enforced by Chrome, Firefox and Android.",
+    "evidence": "Apple's entire enumerated requirement set is TLS 1.2+, AES-128/256, ECDHE PFS, RSA≥2048 / ECC≥256, SHA-256+, and chain-to-trust-anchor. No Apple cipher, key-escrow or recovery-key mechanism appears anywhere in the ATS specification, the NSAppTransportSecurity key reference, or the Apple Platform Security TLS chapter, which lists only TLS 1.0/1.1/1.2/1.3, DTLS, AES-128/256 and PFS suites.",
+    "source": "https://support.apple.com/zh-cn/guide/security/sec100a75d12",
+    "confidence": "high"
+   },
+   {
+    "claim": "ATS does NOT do certificate pinning by default, and does NOT force US-controlled CAs. Pinning is opt-in via the separate NSPinnedDomains key; default trust evaluation uses the standard iOS root store.",
+    "evidence": "Apple: \"When ATS is enabled, you can no longer loosen trust evaluation requirements that way, but you can still tighten them — for example, to implement certificate pinning.\" Pinning is configured only through the opt-in NSPinnedDomains key: \"The value for this optional key is a dictionary with keys that specify the domain names for which you want to set the expected certificates ... NSPinnedCAIdentities : Array / NSPinnedLeafIdentities : Array\". Trust anchors: \"Issued by a certificate authority (CA) whose root certificate is incorporated into the operating system\".",
+    "source": "https://developer.apple.com/tutorials/data/documentation/bundleresources/information-property-list/nsapptransportsecurity/nspinneddomains.json",
+    "confidence": "high"
+   },
+   {
+    "claim": "The iOS trust store that ATS relies on is a single global store, not a US-only one, and it already contains Chinese CAs — including CFCA EV ROOT and GDCA TrustAUTH R5 ROOT. So ATS does not lock a Chinese app out of Chinese PKI.",
+    "evidence": "Apple's iOS 26 root list row: \"CFCA EV ROOT | CFCA EV ROOT | RSA | 4096 位 | SHA-256 | 18 4A CC D6 | 2029 年 12 月 31 日 03:07:01\" and \"GDCA TrustAUTH R5 ROOT | GDCA TrustAUTH R5 ROOT | RSA | 4096 位 | SHA-256 | 7D 09 97 FE F0 47 EA 7A | 2040 年 12 月 31 日 15:59:59\". Apple: \"从 iOS 12、macOS 10.14、Apple tvOS 12 和 watchOS 5 开始，所有 Apple 操作系统全都使用共享根证书存储区\" — one shared store, listed per OS version only, with no region-specific variant.",
+    "source": "https://support.apple.com/zh-cn/126047",
+    "confidence": "high"
+   },
+   {
+    "claim": "The TLS stack ATS actually runs on (Network.framework / CFNetwork / libnetwork.dylib) is NOT open source. Apple's open-source Security repo does publish libsecurity_ssl (SecureTransport) — but that API is deprecated and cannot do TLS 1.3, so it is not the ATS path.",
+    "evidence": "apple-oss-distributions/Security contains 219 paths under OSX/libsecurity_ssl (SecureTransport.h, CipherSuite.h, sslRecord.c) and is actively updated (latest commit 2025-10-04, \"Security-61901.0.87.0.1\"). But its headers say: \"__API_DEPRECATED(\"No longer supported. Use Network.framework.\")\" with deprecation at 10_15 / iOS 13_0. Apple Platform Security: \"在运行 iOS 12.2 或更高版本的设备上，针对 Network.framework 和 NSURLSession API 默认启用 TLS 1.3。使用 SecureTransport API 的 TLS 客户端不能使用 TLS 1.3。\" So the open-source stack is the legacy one; the live ATS stack is closed.",
+    "source": "https://github.com/apple-oss-distributions/Security",
+    "confidence": "high"
+   },
+   {
+    "claim": "China's Cryptography Law requires CII operators to use 商用密码 (commercial cryptography) where law/regulation so requires, and to undergo 商用密码应用安全性评估. This is the legitimate kernel of the user's 'sovereignty' hypothesis.",
+    "evidence": "密码法 第二十七条: \"法律、行政法规和国家有关规定要求使用商用密码进行保护的关键信息基础设施，其运营者应当使用商用密码进行保护，自行或者委托商用密码检测机构开展商用密码应用安全性评估。\" Law adopted 2019-10-26, effective 2020-01-01. Reinforced by 《关键信息基础设施商用密码使用管理规定》(国家密码管理局、国家互联网信息办公室、公安部令第5号, published 2025-06-27, effective 2025-08-01), Art. 10: \"关键信息基础设施应当按照国家数据安全保护、个人信息保护有关要求，使用商用密码对其存储、使用、传输的核心数据、重要数据和个人信息进行保护。\"",
+    "source": "https://www.oscca.gov.cn/sca/c100236/2019-10/28/content_1057345.shtml",
+    "confidence": "high"
+   },
+   {
+    "claim": "The SM-series transport protocol is GB/T 38636-2020 TLCP (SM2 key exchange/signature + SM3 hash + SM4 cipher) — a genuine Chinese national standard, functionally a Chinese variant of TLS.",
+    "evidence": "GB/T 38636-2020《信息安全技术 传输层密码协议（TLCP）》released April 2020, effective 2020-11-01, CCS L80; specifies record layer, handshake suite and key computation; uses SM2 dual-certificate identity authentication, SM3 hashing, SM4 symmetric encryption; evolved from GM/T 0024《SSL VPN技术规范》. GB/T 39786-2021 (effective 2021-10-01) is the 密评 baseline standard; 密标委 explains that when SSL is used at the network layer, the algorithm-compliance (A) dimension examines BOTH the certificate's public-key algorithm AND its signature algorithm.",
+    "source": "https://baike.baidu.com/item/%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8%E6%8A%80%E6%9C%AF%E2%80%94%E4%BC%A0%E8%BE%93%E5%B1%82%E5%AF%86%E7%A0%81%E5%8D%8F%E8%AE%AE(TLCP)/53726701",
+    "confidence": "medium"
+   },
+   {
+    "claim": "CRITICAL COUNTERPOINT: ATS is enforced above the crypto layer and does NOT apply to lower-level networking APIs. A TLCP/SM stack would run on exactly those lower-level APIs, so ATS is irrelevant to it — turning ATS off cannot enable SM crypto, and leaving it on cannot block SM crypto.",
+    "evidence": "Apple: \"ATS doesn't apply to calls your app makes to lower-level networking interfaces like the [Network] framework or [BSD sockets]. In these cases, you take responsibility for ensuring the security of the connection.\" And: \"ATS protections are not available when using lower-level networking APIs provided by Apple, or when using third-party networking libraries.\" So ATS governs URLSession/CFNetwork HTTP(S) only.",
+    "source": "https://developer.apple.com/documentation/security/preventing-insecure-network-connections",
+    "confidence": "high"
+   },
+   {
+    "claim": "China's law does NOT ban TLS or RSA. It mandates 商用密码 for CII/regulated systems and sets non-discrimination and voluntary-cooperation principles for commercial cryptography; it never prohibits IETF TLS.",
+    "evidence": "密码法 第二十一条: \"各级人民政府及其有关部门应当遵循非歧视原则，依法平等对待包括外商投资企业在内的商用密码科研、生产、销售、服务、进出口等单位 ... 国家鼓励在外商投资过程中基于自愿原则和商业规则开展商用密码技术合作。行政机关及其工作人员不得利用行政手段强制转让商用密码技术。\" 商用密码管理条例 第十一条 ties compliance to \"商用密码强制性国家标准\" for 商用密码 activities — a scope-limited obligation, not a blanket TLS prohibition. 条例 第二十三条 explicitly promotes \"推进商用密码中国标准与国外标准之间的转化运用\".",
+    "source": "https://www.gov.cn/gongbao/2023/issue_10506/202306/content_6885266.html",
+    "confidence": "high"
+   },
+   {
+    "claim": "iOS has no native SM2/SM3/SM4 or TLCP support. CryptoKit exposes only SHA-2/3, AES-GCM, ChaChaPoly, HMAC, HKDF, NIST P-256/384/521 and Curve25519 — so a 'go sovereign' iOS app must bundle GmSSL/tongsuo at the application layer.",
+    "evidence": "Apple CryptoKit symbol index lists SHA-2/SHA-3 digests, AES-GCM, ChaChaPoly, HMAC, HKDF, P-256/P-384/P-521 and Curve25519 (Ed25519/X25519) only — no SM2, SM3, SM4 or SM9 types. Apple Platform Security TLS chapter lists only TLS 1.0/1.1/1.2/1.3 and DTLS. Practical iOS SM work therefore uses third-party stacks (GMObjC, GMCryptoKit built on GmSSL).",
+    "source": "https://developer.apple.com/documentation/cryptokit/",
+    "confidence": "high"
+   },
+   {
+    "claim": "The one genuine governance caveat: Apple unilaterally curates the trust store and reserves the right to raise ATS requirements at any time without breaking binary compatibility. This is a policy/control lever, not a cryptographic backdoor.",
+    "evidence": "Apple: \"The requirements listed in this section are current as of this document's publication date, with stricter requirements possible in the future. Changes to these requirements will not break app binary compatibility.\" Trust anchors are defined as roots \"incorporated into the operating system\", i.e. Apple's curated list; ATS also supports an opt-in NIAP (US NIAP) Functional Package for TLS compliance mode via NSRequiresNIAPTLSPackageVersion.",
+    "source": "https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CocoaKeys.html",
+    "confidence": "high"
+   }
+  ],
+  "could_not_verify": [
+   "Could not obtain Apple's official statement that the iOS root store is byte-identical across sales regions. The strong indirect evidence is that Apple publishes one shared store per OS version with no region-specific lists, and that Chinese CAs (CFCA, GDCA) appear in it — but Apple never says in one sentence 'the China-region trust store equals the global one'. Confirming this would need a side-by-side Trust Store Version comparison on a 国行 vs 美版 device.",
+   "Could not verify the internals of libnetwork.dylib / Network.framework's TLS implementation (whether it is BoringSSL-derived or an in-house rewrite). Apple ships no source for it and I did not disassemble it. So 'the live ATS TLS stack is closed source' is verified; 'it contains no hidden behaviour' is NOT verified by source audit — it is supported only by the fact that it negotiates standard IETF TLS with IANA-registered suites and by independent third-party traffic inspection.",
+   "Could not obtain the verbatim text of GB/T 39786-2021 clause 8.2 (三级 网络和通信安全). The clause structure and the SM2/SM3/SM4 compliance expectation are corroborated by 密评 commentary and 密标委 Q&A, but the exact normative wording ('应采用密码技术保证...') was not read from the standard text itself — GB/T standards are paywalled/not freely published in full.",
+   "Could not verify the claim that iOS 26's default TLS 1.3 with X25519MLKEM768 post-quantum key exchange has any US-government backdoor implication — no evidence either way; noting only that Apple enabled it by default in iOS 26 per the Platform Security guide.",
+   "Did not verify whether the specific 公安一网通办 sample's ATS configuration is NSAllowsArbitraryLoads=YES vs per-domain exceptions — that is repo-side evidence (evidence/gaywtb_ats_analysis.md) and outside this task's scope."
+  ],
+  "bottom_line_for_report": "A security report can honestly say this: ATS is not an American cryptographic black box. It is a policy gate in URLSession/CFNetwork that requires ordinary IETF TLS 1.2+ (RFC 5246, or TLS 1.3 per RFC 8446) with AES-128/256, ECDHE forward secrecy, RSA≥2048 or ECC≥256 keys and SHA-256+ certificates — and every cipher suite it accepts is an IANA-registered IETF suite from RFC 5289/RFC 8422. Apple contributes no cipher, no key exchange, no escrow and no backdoor; its only additions are minimum-strength thresholds that Chrome, Firefox and Android also enforce. ATS does not pin certificates by default and does not force US trust anchors: it uses the single shared iOS root store, which already contains Chinese CAs (CFCA EV ROOT, GDCA TrustAUTH R5 ROOT), so ATS does not lock a Chinese app out of Chinese PKI. The single defensible caveat is governance rather than cryptography — Apple alone curates the trust store and reserves the right to tighten ATS requirements at any time — but that is a lever every OS vendor holds and it is not a channel for secret interception. Crucially for the 'sovereignty' defence: China's own regime does genuinely push SM2/SM3/SM4 (密码法 Art. 27 for CII, 商用密码管理条例, GB/T 38636-2020 TLCP), so the suspicion is not baseless in principle — but ATS sits above the crypto layer and explicitly does not apply to the low-level APIs a TLCP stack would use, so disabling ATS cannot deliver SM crypto and enabling it cannot block SM crypto. Globally disabling ATS therefore buys exactly one thing: permission to send plaintext HTTP. The correct framing for the report is that the sovereignty hypothesis deserves to be stated and tested rather than dismissed, and that in this sample it fails on evidence — no SM implementation present, production cert chain still anchored in an overseas root (Certum, Poland), and the same host reachable over both https:// and http:// — not on the grounds that the concern was unreasonable."
+ }
+]
