@@ -1,0 +1,783 @@
+{
+ "schema": "gaywtb-normative-citations/v2",
+ "purpose": "本报告全部规范引文：逐条可点开核验 + 独立对抗复核判词。",
+ "method": "每份来源由独立 agent 实取原文，再由另一个独立 agent 尝试证伪（verbatim / official / supports 三项）。",
+ "generated": "2026-10-25",
+ "confirmed": [
+  {
+   "key": "NIST SP 800-38A (2001) §6.1",
+   "url": "https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf",
+   "version": "NIST Special Publication 800-38A, 2001 Edition, \"Recommendation for Block Cipher Modes of Operation: Methods and Techniques\", Morris Dworkin, December 2001 (PDF CreationDate 2001-12-10; 66 pages)",
+   "quotes": [
+    {
+     "text": "The Electronic Codebook (ECB) mode is a confidentiality mode that features, for a given key, the assignment of a fixed ciphertext block to each plaintext block, analogous to the assignment of code words in a codebook.",
+     "locator": "§6.1 The Electronic Codebook Mode, printed p. 9 (PDF p. 16), opening sentence",
+     "supports": "(a) fixed ciphertext block assigned to each plaintext block under a given key"
+    },
+    {
+     "text": "In the ECB mode, under a given key, any given plaintext block always gets encrypted to the same ciphertext block.",
+     "locator": "§6.1 The Electronic Codebook Mode, printed pp. 9-10 (PDF pp. 16-17); sentence spans the page break",
+     "supports": "(a) the exact determinism sentence: any given plaintext block always encrypts to the same ciphertext block"
+    },
+    {
+     "text": "If this property is undesirable in a particular application, the ECB mode should not be used.",
+     "locator": "§6.1 The Electronic Codebook Mode, printed p. 10 (PDF p. 17)",
+     "supports": "closest thing in SP 800-38A to an ECB suitability warning — conditional on the determinism property being undesirable, NOT a diffusion or short-data statement"
+    },
+    {
+     "text": "In ECB encryption, the forward cipher function is applied directly and independently to each block of the plaintext.",
+     "locator": "§6.1 The Electronic Codebook Mode, printed p. 9 (PDF p. 16)",
+     "supports": "ECB blocks are enciphered independently — the mechanism behind the determinism property"
+    }
+   ]
+  },
+  {
+   "key": "NIST SP 800-57 Part 1 Rev. 5 — Recommendation for Key Management: Part 1 – General (Elaine Barker, May 2020)",
+   "url": "https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-57pt1r5.pdf",
+   "version": "NIST Special Publication 800-57 Part 1, Revision 5, May 2020 (170 pages; PDF has 171 pages). DOI 10.6028/NIST.SP.800-57pt1r5. SHA-256 of the downloaded file: cc32391022c1382ac7c91490f6bcc8838e0f889925270da23ef4e800e2ecb7ad. Landing page confirmed at https://csrc.nist.gov/publications/detail/sp/800-57-part-1/rev-5/final (final version dated 05/04/20).",
+   "quotes": [
+    {
+     "text": "Information protected by cryptographic mechanisms is secure only if the algorithms remain strong and the keys have not been compromised. It is the responsibility of an owner of a private or secret key to protect the confidentiality of that key. Key compromise occurs when the protective mechanisms for the key fail (e.g., the confidentiality, integrity, or association of the key to its owner fail; see Section 6) and the key can no longer be trusted to provide the required security.",
+     "locator": "Section 5.5 \"Compromise of Keys and other Keying Material\", opening paragraph — printed p. 49 (PDF p. 62)",
+     "supports": "Definition of key compromise and the owner's duty to protect key confidentiality (the frame for any 'key shipped inside the product' argument)"
+    },
+    {
+     "text": "When a key is compromised, all use of the key to apply cryptographic protection to information (e.g., compute a digital signature or encrypt information) shall cease, and the compromised key shall be revoked (see Section 8.3.5).",
+     "locator": "Section 5.5, second paragraph — printed p. 49 (PDF p. 62)",
+     "supports": "(c) compromise mandates ceasing use and revoking the key"
+    },
+    {
+     "text": "The continued use of a compromised key shall be limited to processing information that has already been protected.",
+     "locator": "Section 5.5, third paragraph — printed p. 49 (PDF p. 62)",
+     "supports": "(c) the only permitted residual use of a compromised key is verifying/decrypting already-protected data"
+    },
+    {
+     "text": "The worst form of key compromise is one that is not detected. Nevertheless, even in this case, certain protective measures can be taken. A key management system should be designed to mitigate the negative effects of a key compromise; the system should be designed so that the compromise of a single key compromises as little data as possible (see SP 800-152). For example, a single cryptographic key could be used to protect the data of only a single human entity or a limited number of such entities. Often, systems have alternative methods to authenticate communicating entities that do not rely solely on the possession of keys. The intent is to avoid building a system with catastrophic weaknesses.",
+     "locator": "Section 5.5.2 \"Protective Measures\", closing paragraph — printed p. 51 (PDF p. 64)",
+     "supports": "Blast-radius principle: one key must not be shared fleet-wide; a single shared key makes one compromise catastrophic"
+    },
+    {
+     "text": "The following procedures are usually involved: 1. Limiting the amount of time that a secret symmetric or asymmetric private key is in plaintext form; 2. Preventing humans from viewing plaintext secret symmetric and asymmetric private keys; 3. Restricting plaintext secret and private keys to physically protected “containers.” This includes key generators, key-transport devices, key loaders, cryptographic modules, hardware security modules (HSMs), and key-storage devices;",
+     "locator": "Section 5.5.2 \"Protective Measures\", items 1–3 — printed p. 50 (PDF p. 63)",
+     "supports": "(a) closest thing in this document to 'do not leave keys exposed in the application': plaintext key material must be confined to physically protected containers, and humans must not be able to view it"
+    },
+    {
+     "text": "Generally, keys are compromised when they are provided to or determined by an unauthorized entity. A compromised key shall not be used to apply cryptographic protection to information.",
+     "locator": "Section 7.5 \"Compromised State\" — printed p. 87 (PDF p. 100)",
+     "supports": "(c) the state machine view: once provided to an unauthorized entity the key is in the compromised state and shall not protect data"
+    },
+    {
+     "text": "The security of keying-material installation is crucial to the security of a system, whether the keying material is generated within the system (e.g., in the system’s cryptographic module) or generated within another system and subsequently installed in the (target) system. For this function, keying material is installed for operational use within an entity’s software, hardware, system, application, cryptographic module, or device using a variety of techniques.",
+     "locator": "Section 8.1.4 \"Keying-Material Installation Function\", opening paragraph — printed p. 92 (PDF p. 105)",
+     "supports": "(a) key material installed into an application/device is explicitly in scope and its security is called 'crucial'"
+    },
+    {
+     "text": "The process for the initial installation of keying material (e.g., by manual entry, using an electronic key loader, or a vendor during manufacture) shall include the protection of the keying material during entry into a software, hardware, system, application, device, or cryptographic module",
+     "locator": "Section 8.1.4, second paragraph — printed p. 92 (PDF p. 105)",
+     "supports": "(a) installation 'during manufacture' into 'software, hardware, system, application, device' carries a shall-level protection requirement"
+    },
+    {
+     "text": "Many applications or systems are provided by the manufacturer with keying material that is used to test that the newly installed application/system is functioning properly. This test keying material shall not be used operationally.",
+     "locator": "Section 8.1.4, final paragraph — printed p. 92 (PDF p. 105)",
+     "supports": "(a) vendor-shipped embedded key material is expressly forbidden from operational use — the nearest explicit rule about baked-in keys in this document"
+    },
+    {
+     "text": "Confidentiality protection shall be provided for all secret key information (i.e., key information that is intended to be kept secret, such as symmetric (secret) keys, asymmetric private keys, key shares, and secret metadata).",
+     "locator": "Section 6.1 \"Protection and Assurance Requirements\", first requirement — printed p. 65 (PDF p. 78)",
+     "supports": "(a) all secret keys require confidentiality protection, with no carve-out for keys bundled in an app"
+    },
+    {
+     "text": "When the secret or private key information is available outside of a cryptographic module, confidentiality protection shall be provided by encryption at an appropriate security strength (see SP 800-152) or by controlling access to the secret key information via physical means.",
+     "locator": "Section 6.1, first requirement, final sentence — printed p. 65 (PDF p. 78)",
+     "supports": "(a) a key living outside a cryptographic module must still be encrypted or physically access-controlled — a bare string in an app satisfies neither"
+    },
+    {
+     "text": "One of the following mechanisms shall be used to provide confidentiality for secret key information in storage: 1. Encryption (or key wrapping) using an approved algorithm in a FIPS 140-validated cryptographic module; the encryption shall use an approved technique that provides protection at the security strength that meets or exceeds the security strength required for the secret key information. -OR- 2. Physical protection provided by a FIPS 140-validated cryptographic module at a security level that is consistent with the FIPS 199 impact level associated with the data to be protected by the key (see SP 800-152). -OR- 3. Physical protection provided by secure storage with controlled access (e.g., a safe or protected area).",
+     "locator": "Section 6.2.2.3 \"Confidentiality\" — printed p. 77 (PDF p. 90)",
+     "supports": "(a) exhaustive three-option list for at-rest secret keys; a key embedded in application code matches none of the three"
+    },
+    {
+     "text": "When keying material is compromised, continuity of operations requires the establishment of entirely new keying material (see Section 8.1.5) following an assessment of the keying material that was affected; all affected keying material needs to be replaced.",
+     "locator": "Section 8.2.2 \"Continuity of Operations Function\", second paragraph — printed p. 105 (PDF p. 118)",
+     "supports": "(c) compromise requires establishment of entirely new keying material and replacement of all affected material"
+    },
+    {
+     "text": "Re-keying is used when a key has been compromised (provided that the re-keying scheme itself is not compromised) or when the cryptoperiod has expired or is nearing expiration.",
+     "locator": "Section 8.2.3.1 \"Re-keying\" — printed p. 108 (PDF p. 121)",
+     "supports": "(c) the replacement mechanism for a compromised key is re-keying via key establishment"
+    },
+    {
+     "text": "If a key is compromised, its cryptoperiod shall no longer be considered valid.",
+     "locator": "Section 5.3 \"Cryptoperiods\", second paragraph — printed p. 34 (PDF p. 47)",
+     "supports": "(c) compromise invalidates the key's authorized lifetime"
+    },
+    {
+     "text": "A key may be revoked for administrative reasons (e.g., the key’s owner has left the organization, or a device containing the key has been removed from service), or it may be revoked on an emergency basis if there is reason to believe that it may have been disclosed to or otherwise accessed by an unauthorized entity. In either case, a cryptographic key should be revoked as soon as feasible after the need for revocation has been determined.",
+     "locator": "Section 8.3.5 \"Key Revocation Function\", opening paragraph — printed p. 113 (PDF p. 126)",
+     "supports": "(c) revocation triggers include suspected disclosure, and revocation should follow as soon as feasible"
+    },
+    {
+     "text": "Key establishment is the process by which cryptographic keys are securely established among entities using manual transport methods (e.g., key loaders), automated methods (e.g., key-transport and/or key-agreement protocols), or a combination of automated and manual methods.",
+     "locator": "Section 3.6 \"Support Services\" — printed p. 23 (PDF p. 36); identical wording also in the Section 2.1 glossary entry \"Key establishment\" (printed p. 12, PDF p. 25)",
+     "supports": "(b) formal definition of key establishment vs. a key that is simply pre-placed"
+    },
+    {
+     "text": "Static key A key that is intended for use for a relatively long period of time and is typically intended for use in many instances of a cryptographic key-establishment scheme. Contrast with an Ephemeral key.",
+     "locator": "Section 2.1 \"Glossary\", entry \"Static key\" — printed p. 19 (PDF p. 32)",
+     "supports": "(b) glossary definition of a static (long-term) key and its contrast with ephemeral keys"
+    },
+    {
+     "text": "Ephemeral keys are often used for key agreement instead of or in addition to the use of static keys (see SP 800-56A).",
+     "locator": "Section 8.1.5.1 \"Generation and Distribution of Asymmetric Key Pairs\" — printed p. 93 (PDF p. 106)",
+     "supports": "(b) ephemeral-vs-static tradeoff in key agreement"
+    },
+    {
+     "text": "Ephemeral key pairs are generated for each new key-establishment transaction (e.g., unique to each message or session) by the owner.",
+     "locator": "Section 8.1.5.1, paragraph on ephemeral key pairs — printed p. 93 (PDF p. 106)",
+     "supports": "(b) per-session freshness that a shipped static key cannot provide"
+    },
+    {
+     "text": "A key-agreement scheme uses either static or ephemeral asymmetric key pairs or both.",
+     "locator": "Section 8.1.5.2.3 \"Key Agreement\" — printed p. 101 (PDF p. 114)",
+     "supports": "(b) key agreement can rest on static or ephemeral key pairs"
+    },
+    {
+     "text": "Key update could result in a security exposure if an adversary obtains a key in the chain of derived keys and knows the update process that was used; keys subsequent to the compromised key could easily be determined.",
+     "locator": "Section 8.2.3.2 \"Key Update Function\" — printed p. 108 (PDF p. 121)",
+     "supports": "(c) derived/updated keys inherit compromise from a single leaked predecessor key"
+    },
+    {
+     "text": "The number of nodes in a network that share a common key;",
+     "locator": "Section 5.3.1 \"Factors Affecting Cryptoperiods\", item 11 — printed p. 35 (PDF p. 48)",
+     "supports": "(a) NIST treats the population sharing one key as a cryptoperiod-shortening risk factor"
+    },
+    {
+     "text": "In general, where strong cryptography is employed, physical, procedural, and logical access-protection considerations often have more impact on cryptoperiod selection than do algorithm and key-size factors.",
+     "locator": "Section 5.3.1, closing paragraph — printed p. 35 (PDF p. 48)",
+     "supports": "(a) access protection around the key matters more than algorithm strength"
+    },
+    {
+     "text": "adversaries may be able to access keys through the penetration or subversion of a system with less expenditure of time and resources than would be required to mount and execute a cryptographic attack.",
+     "locator": "Section 5.3.1, closing paragraph, final sentence — printed p. 35 (PDF p. 48)",
+     "supports": "(a) key extraction via subverting the system is cheaper than cryptanalysis — the core rationale against shipping keys in the client"
+    },
+    {
+     "text": "Trust-anchor certificates are often embedded within an application and distributed with the application.",
+     "locator": "Section 8.1.5.1.1 \"Distribution of a Trust Anchor’s Public Key in a PKI\" — printed p. 94 (PDF p. 107)",
+     "supports": "Only use of 'embedded' in the whole document; it refers to public trust-anchor certificates, not secret keys"
+    },
+    {
+     "text": "In some cases, the costs associated with changing keys are painfully high. Examples include the decryption and subsequent re-encryption of very large databases, the decryption and re-encryption of distributed databases, and the revocation and replacement of a very large number of keys (e.g., where there are very large numbers of geographically and organizationally distributed key holders).",
+     "locator": "Section 5.3.3.2 \"Cost of Key Revocation and Replacement\" — printed p. 36 (PDF p. 49)",
+     "supports": "(c) why replacing a widely distributed key is expensive — the operational cost of the mandated replacement"
+    },
+    {
+     "text": "The unauthorized disclosure of a key means that another entity (an unauthorized entity) may know the key and be able to use that key to perform computations requiring the use of the key.",
+     "locator": "Section 5.5.1 \"Implications\", item 1 — printed p. 49 (PDF p. 62)",
+     "supports": "(c) consequence of disclosure: an unauthorized party can perform the key's computations"
+    },
+    {
+     "text": "The security of encrypted information that was available at any time to unauthorized entities in its encrypted form should be considered suspect.",
+     "locator": "Section 5.6.5 \"Decrease of Security Strength Over Time\", first bullet — printed p. 63 (PDF p. 76)",
+     "supports": "(c) retroactive damage: previously protected data must be treated as suspect after compromise"
+    }
+   ]
+  },
+  {
+   "key": "owasp_masvs_mastg_crypto",
+   "url": "https://mas.owasp.org/MASVS/controls/MASVS-CRYPTO-1/",
+   "version": "OWASP MASVS v2.1.0 (latest release, tagged 2024-01-18; control text byte-identical on master HEAD bbe226fd17e6 dated 2026-09-21 and on tag v2.0.0). MASTG v2.0.0 (release tag 2026-06-30; test sources live under tests-beta/ on master HEAD 2eb0f7097e5f dated 2026-10-24).",
+   "quotes": [
+    {
+     "text": "The app employs current strong cryptography and uses it according to industry best practices.",
+     "locator": "MASVS-CRYPTO-1 — Control (statement); https://mas.owasp.org/MASVS/controls/MASVS-CRYPTO-1/ and controls/MASVS-CRYPTO-1.md on tag v2.1.0",
+     "supports": "Exact requirement statement text for MASVS-CRYPTO-1"
+    },
+    {
+     "text": "Cryptography plays an especially important role in securing the user's data - even more so in a mobile environment, where attackers having physical access to the user's device is a likely scenario. This control covers general cryptography best practices, which are typically defined in external standards.",
+     "locator": "MASVS-CRYPTO-1 — Description; https://mas.owasp.org/MASVS/controls/MASVS-CRYPTO-1/",
+     "supports": "CRYPTO-1 elaboration: general crypto best practices, external standards (NIST)"
+    },
+    {
+     "text": "The app performs key management according to industry best practices.",
+     "locator": "MASVS-CRYPTO-2 — Control (statement); https://mas.owasp.org/MASVS/controls/MASVS-CRYPTO-2/ and controls/MASVS-CRYPTO-2.md on tag v2.1.0",
+     "supports": "Exact requirement statement text for MASVS-CRYPTO-2"
+    },
+    {
+     "text": "Even the strongest cryptography would be compromised by poor key management. This control covers the management of cryptographic keys throughout their lifecycle, including key generation, storage and protection.",
+     "locator": "MASVS-CRYPTO-2 — Description; https://mas.owasp.org/MASVS/controls/MASVS-CRYPTO-2/",
+     "supports": "CRYPTO-2 elaboration on key storage / key management / key lifecycle"
+    },
+    {
+     "text": "This category also focuses on the management of cryptographic keys throughout their lifecycle, including key generation, storage, and protection. Poor key management can compromise even the strongest cryptography, so it is crucial for developers to follow the recommended best practices to ensure the security of their users' sensitive data.",
+     "locator": "MASVS-CRYPTO: Cryptography — chapter introduction; https://mas.owasp.org/MASVS/06-MASVS-CRYPTO/ and Document/06-MASVS-CRYPTO.md",
+     "supports": "Category-level framing that CRYPTO-2 owns key storage/key management"
+    },
+    {
+     "text": "The purpose of the controls in this category is to ensure that the verified app uses cryptography according to industry best practices, which are typically defined in external standards such as [NIST.SP.800-175B](...) and [NIST.SP.800-57](...).",
+     "locator": "MASVS-CRYPTO: Cryptography — chapter introduction; https://mas.owasp.org/MASVS/06-MASVS-CRYPTO/",
+     "supports": "Which external standards the MASVS-CRYPTO controls point to"
+    },
+    {
+     "text": "The test case fails if you find any hardcoded keys that are used in security-sensitive contexts.",
+     "locator": "MASTG-TEST-0212 — Evaluation; https://mas.owasp.org/MASTG/tests/android/MASVS-CRYPTO/MASTG-TEST-0212/ (source: tests-beta/android/MASVS-CRYPTO/MASTG-TEST-0212.md)",
+     "supports": "Current MASTG test and pass/fail criterion for hardcoded keys (Android)"
+    },
+    {
+     "text": "In this test case, we will look for the use of hardcoded keys in Android applications. To do this, we need to focus on the cryptographic implementations of hardcoded keys. The Java Cryptography Architecture (JCA) provides the SecretKeySpec class, which allows you to create a SecretKey from a byte array.",
+     "locator": "MASTG-TEST-0212 — Overview; title: \"Use of Hardcoded Cryptographic Keys in Code\"",
+     "supports": "MASTG-TEST-0212 scope and the Android API of interest"
+    },
+    {
+     "text": "The test case fails if calls to cryptographic functions with hardcoded keys are found within binary.",
+     "locator": "MASTG-TEST-0213 — Evaluation; https://mas.owasp.org/MASTG/tests/ios/MASVS-CRYPTO/MASTG-TEST-0213/ (source: tests-beta/ios/MASVS-CRYPTO/MASTG-TEST-0213.md)",
+     "supports": "Current MASTG test and pass/fail criterion for hardcoded keys (iOS)"
+    },
+    {
+     "text": "In this test case, we will examine iOS applications for the presence of hardcoded cryptographic keys. Hardcoded keys can be typically found in calls to cryptographic functions or stored as constants or variables within the code.",
+     "locator": "MASTG-TEST-0213 — Overview; title: \"Use of Hardcoded Cryptographic Keys in Code\"",
+     "supports": "MASTG-TEST-0213 scope (iOS hardcoded keys)"
+    },
+    {
+     "text": "You may find the keys being directly passed as arguments to cryptographic functions (byte arrays or string literals) or stored in variables or constants within the code. Typical representations of hardcoded keys include: - Raw Byte Arrays: ... - Base64-Encoded Strings: ... - Hex-Encoded Strings: ...",
+     "locator": "MASTG-TEST-0213 — Evaluation (iOS)",
+     "supports": "Concrete forms hardcoded symmetric keys take in binaries"
+    },
+    {
+     "text": "A common mistake is encrypting locally stored data with a static, hardcoded encryption key and compiling that key into the app. This makes the key accessible to anyone who can use a disassembler.",
+     "locator": "MASTG Document/0x04g-Testing-Cryptography.md — section \"Symmetric Encryption with Hard-Coded Cryptographic Keys\"",
+     "supports": "Official MASTG rationale for why hardcoded keys are a finding"
+    },
+    {
+     "text": "Hardcoded encryption key means that a key is: - part of application resources - value which can be derived from known values - hardcoded in code",
+     "locator": "MASTG Document/0x04g-Testing-Cryptography.md — section \"Symmetric Encryption with Hard-Coded Cryptographic Keys\"",
+     "supports": "Official three-part definition of a hardcoded encryption key"
+    },
+    {
+     "text": "Secret keys must be stored in secure device storage whenever symmetric cryptography is used in mobile apps.",
+     "locator": "MASTG Document/0x04g-Testing-Cryptography.md — section \"Symmetric Encryption with Hard-Coded Cryptographic Keys\"",
+     "supports": "Key-storage requirement that pairs with MASVS-CRYPTO-2"
+    },
+    {
+     "text": "For each identified instance verify if the used symmetric keys: - are not part of the application resources - cannot be derived from known values - are not hardcoded in code",
+     "locator": "MASTG-TEST-0013 — Static Analysis (status: deprecated, covered_by MASTG-TEST-0212, MASTG-TEST-0221, MASTG-TEST-0309, MASTG-TEST-0310)",
+     "supports": "The older v1 symmetric-cryptography test that carried the hardcoded-key checks"
+    },
+    {
+     "text": "This test is deprecated and should not be used anymore. Reason: Please check the following MASTG v2 tests that cover this v1 test: Use of Hardcoded Cryptographic Keys in Code / Broken Symmetric Encryption Algorithms / References to Reused Initialization Vectors in Symmetric Encryption / Runtime Use of Reused Initialization Vectors in Symmetric Encryption",
+     "locator": "https://mas.owasp.org/MASTG/tests/android/MASVS-CRYPTO/MASTG-TEST-0013/ — \"Deprecated Test\" banner",
+     "supports": "MASTG-TEST-0013 is retired; its hardcoded-key content now lives in MASTG-TEST-0212"
+    },
+    {
+     "text": "This weakness occurs when cryptographic keys are stored outside the platform-provided secure keystore, in locations such as unencrypted preferences, unprotected files, or the application code itself.",
+     "locator": "MASWE-0003 \"Cryptographic Keys Stored Outside of Platform Keystore\" — Overview; weaknesses/MASVS-STORAGE/MASWE-0003.md; requirement: \"The app stores cryptographic keys inside the platform-provided secure keystore.\" (masvs-v2: [MASVS-STORAGE-1, MASVS-CRYPTO-2])",
+     "supports": "The MASWE weakness that maps MASVS-CRYPTO-2 to hardcoded / improperly stored keys"
+    },
+    {
+     "text": "This weakness occurs when cryptographic keys can be used without restrictions on who may use them, under which device conditions, and for how long.",
+     "locator": "MASWE-0016 \"Cryptographic Key Access Not Restricted\" — Overview; requirement: \"The app restricts access to cryptographic keys.\" (masvs-v2: [MASVS-CRYPTO-2, MASVS-AUTH-2, MASVS-AUTH-3])",
+     "supports": "Second MASWE weakness under MASVS-CRYPTO-2 covering key access restrictions"
+    }
+   ]
+  },
+  {
+   "key": "owasp-masvs",
+   "url": "https://raw.githubusercontent.com/OWASP/masvs/master/OWASP_MASVS.yaml",
+   "version": "OWASP MASVS v2.1.0 (latest tagged release, published 2024-01-18) — control statements identical on master (commit bbe226fd17e6dab51927f392936deef31c816423, 2026-09-21) and on the live site mas.owasp.org. Group intro prose DIFFERS between v2.1.0 and master/live (see honesty_flags).",
+   "quotes": [
+    {
+     "text": "MASVS-RESILIENCE-1\n\n## Control\n\nThe app validates the integrity of the platform.",
+     "locator": "controls/MASVS-RESILIENCE-1.md, at tag v2.1.0 (heading + \"Control\" section)",
+     "supports": "Exact ID and exact statement text for RESILIENCE-1"
+    },
+    {
+     "text": "MASVS-RESILIENCE-2\n\n## Control\n\nThe app implements anti-tampering mechanisms.",
+     "locator": "controls/MASVS-RESILIENCE-2.md, at tag v2.1.0 (heading + \"Control\" section)",
+     "supports": "Exact ID and exact statement text for RESILIENCE-2"
+    },
+    {
+     "text": "MASVS-RESILIENCE-3\n\n## Control\n\nThe app implements anti-static analysis mechanisms.",
+     "locator": "controls/MASVS-RESILIENCE-3.md, at tag v2.1.0 (heading + \"Control\" section)",
+     "supports": "Exact ID and exact statement text for RESILIENCE-3 — note the statement does NOT contain the word 'obfuscation'"
+    },
+    {
+     "text": "MASVS-RESILIENCE-4\n\n## Control\n\nThe app implements anti-dynamic analysis techniques.",
+     "locator": "controls/MASVS-RESILIENCE-4.md, at tag v2.1.0 (heading + \"Control\" section)",
+     "supports": "Exact ID and exact statement text for RESILIENCE-4"
+    },
+    {
+     "text": "Defense-in-depth measures such as code obfuscation, anti-debugging, anti-tampering, and runtime application self-protection (RASP) can increase an app's resilience against reverse engineering and specific client-side attacks.",
+     "locator": "MASVS-RESILIENCE group introduction, Document/11-MASVS-RESILIENCE.md (master) and live https://mas.owasp.org/MASVS/11-MASVS-RESILIENCE/ — first sentence under the group title",
+     "supports": "Obfuscation is named as an EXAMPLE of a defense-in-depth measure, not as a requirement"
+    },
+    {
+     "text": "The absence of these measures does not in itself constitute a vulnerability. Instead, resilience controls provide additional protection against threat-specific attacks. All apps must also fulfill the rest of the OWASP MASVS controls according to their threat model.",
+     "locator": "MASVS-RESILIENCE group introduction, Document/11-MASVS-RESILIENCE.md (master), lines 5 — rendered on live site with the first and third sentences in bold",
+     "supports": "The exact wording establishing that missing resilience measures are NOT a vulnerability — i.e. not mandatory"
+    },
+    {
+     "text": "However, note that the lack of any of these measures does not necessarily cause vulnerabilities - instead, they add threat-specific additional protection to apps which must also fulfil the rest of the OWASP MASVS security controls according to their specific threat models.",
+     "locator": "OWASP_MASVS.yaml, group MASVS-RESILIENCE (index 7), 'description' field — master branch",
+     "supports": "Machine-readable source states the same non-mandatory framing; this is the v2.1.0-era wording that also appears in the v2.1.0 group intro"
+    },
+    {
+     "text": "some testers report a lack of obfuscation or root detection in an Android app as “security flaw”. On the other hand, measures like string encryption, debugger detection or control flow obfuscation aren't considered mandatory. However, this binary way of looking at things doesn't make sense because resilience is not a binary proposition: It depends on the particular client-side threats one aims to defend against.",
+     "locator": "Document/01-Foreword.md, fifth-from-last paragraph before the \"The overall goal of the MASVS\" paragraph (Bernhard Mueller)",
+     "supports": "Strongest single statement that obfuscation is explicitly NOT mandatory, and that calling its absence a 'security flaw' is criticized by OWASP"
+    },
+    {
+     "text": "The overall goal of the MASVS is to offer a baseline for mobile application security, while also allowing for the inclusion of defense-in-depth measures and protections against client-side threats.",
+     "locator": "Document/01-Foreword.md, paragraph beginning \"The overall goal of the MASVS\"",
+     "supports": "Resilience/obfuscation sit in the defense-in-depth layer, additional to the baseline"
+    },
+    {
+     "text": "Software protections are not useless, but they can ultimately be bypassed, so they must never be used as a replacement for security controls.",
+     "locator": "Document/01-Foreword.md, same paragraph as the \"aren't considered mandatory\" sentence",
+     "supports": "Why obfuscation cannot be a mandatory control: it is bypassable and cannot substitute for real controls"
+    },
+    {
+     "text": "Anti-tampering or obfuscation techniques must not be used as a substitute for proper security architecture",
+     "locator": "Document/11-MASVS-RESILIENCE.md, section \"Transparency and Open Audit Perspective\", bullet list of recommended principles",
+     "supports": "OWASP affirmatively argues obfuscation may be undesirable for public-interest apps and is never a substitute for architecture"
+    },
+    {
+     "text": "Note that the absence of any MAS-R measures does not inherently introduce vulnerabilities. Rather, these measures offer additional, threat-specific protection to applications. However, this is provided that these apps also meet the rest of the OWASP MASVS security controls appropriate to their specific threat models. Crucially, MAS-R is meant to augment and not replace MAS-L1 and MAS-L2. It should not be used standalone but as an extra layer of defense, supplementing the base security controls in a defense-in-depth strategy.",
+     "locator": "https://mas.owasp.org/Profiles/MAS-R/ — \"MAS-R - Resilient Security\", paragraph immediately before the \"Requirements\" table",
+     "supports": "Resilience controls only apply if the MAS-R profile is selected, and even then are an augmenting extra layer, never a replacement"
+    },
+    {
+     "text": "Note that these measures cannot assure a 100% effectiveness, as the reverse engineer will always have full access to the device and will therefore end up succeeding given enough time and resources.",
+     "locator": "https://mas.owasp.org/Profiles/MAS-R/ — final paragraph of the profile introduction, before \"Requirements\"",
+     "supports": "OWASP states resilience measures are inherently defeatable — supports not treating absence as a hard defect"
+    },
+    {
+     "text": "MAS-R\n\nThe user of the device is an attacker, including reverse engineers and cheaters.",
+     "locator": "https://mas.owasp.org/Profiles/ — \"Attacker capabilities at a glance\" table, MAS-R row",
+     "supports": "MAS-R is a selectable profile tied to a specific threat model (device user as adversary), not a universal baseline"
+    },
+    {
+     "text": "MASWE-0059: Code Obfuscation Not Implemented\n\nMAS Requirement\n\nThe app implements code obfuscation.",
+     "locator": "https://mas.owasp.org/MASWE/MASVS-RESILIENCE/MASWE-0059/ — title and \"MAS Requirement\" field",
+     "supports": "Obfuscation is expressed as a MASWE weakness entry mapped to MASVS-RESILIENCE-3, not as a MASVS control statement"
+    },
+    {
+     "text": "Obfuscation does not prevent reverse engineering, but it raises its cost.",
+     "locator": "https://mas.owasp.org/MASWE/MASVS-RESILIENCE/MASWE-0059/ — \"Overview\" section",
+     "supports": "Even the obfuscation weakness entry frames obfuscation as cost-raising, not as a preventive control"
+    },
+    {
+     "text": "This section covers defense-in-depth measures recommended for apps that process, or give access to, sensitive data or functionality. Lack of any of these controls does not cause a vulnerability - instead, they are meant to increase the app's resilience against reverse engineering and specific client-side attacks.",
+     "locator": "Document/0x15-V8-Resiliency_Against_Reverse_Engineering_Requirements.md, \"Control Objective\" — at tag v1.5.0 (legacy MASVS v1 numbering, MASVS-R)",
+     "supports": "Legacy v1 wording carries the identical defense-in-depth / not-a-vulnerability framing, showing the position is long-standing not a v2 novelty"
+    },
+    {
+     "text": "Note that software protections must never be used as a replacement for security controls. The controls listed in MASVR-R are intended to add threat-specific, additional protective controls to apps that also fulfil the MASVS security requirements.",
+     "locator": "Document/0x15-V8-Resiliency_Against_Reverse_Engineering_Requirements.md, \"Control Objective\" — at tag v1.5.0",
+     "supports": "Legacy source for 'never a replacement for security controls' (note the 'MASVR-R' typo is present in the original)"
+    }
+   ]
+  },
+  {
+   "key": "apple-ats-nsallowsarbitraryloads",
+   "url": "https://developer.apple.com/documentation/bundleresources/information-property-list/nsapptransportsecurity/nsallowsarbitraryloads",
+   "version": "Apple Developer Documentation (no edition/version number printed). Copyright notice on page: \"Copyright © 2026 Apple Inc. All rights reserved.\" HTTP Last-Modified: Fri, 23 Oct 2026 11:58:03 GMT. Apple Platform Security guide dated \"August 2026\".",
+   "quotes": [
+    {
+     "text": "ATS requires that all HTTP connections made with the URL Loading System—typically using the URLSession class—use HTTPS.",
+     "locator": "NSAppTransportSecurity — Discussion (first paragraph)",
+     "supports": "(a) ATS requires HTTPS for URL Loading System connections"
+    },
+    {
+     "text": "The only action your app must take is to use secure URLs, like those beginning with `https`. Otherwise, ATS denies the connection and prints a console message:",
+     "locator": "Preventing Insecure Network Connections — \"Prefer High-Level Frameworks in Your App\"",
+     "supports": "(a) cleartext HTTP is denied by default, app must use https URLs"
+    },
+    {
+     "text": "App Transport Security has blocked a cleartext HTTP (http://) resource\nload since it is insecure. Temporary exceptions can be configured via\nyour app's Info.plist file.",
+     "locator": "Preventing Insecure Network Connections — code listing in \"Prefer High-Level Frameworks in Your App\"",
+     "supports": "(a) the exact console message emitted when cleartext HTTP is blocked"
+    },
+    {
+     "text": "ATS operates by default for apps linked against the iOS 9.0 or macOS 10.11 SDKs or later. When you link your app against an older SDK, ATS is disabled no matter which version of operating system your app runs on.",
+     "locator": "NSAppTransportSecurity — \"Versioning\"",
+     "supports": "(a) ATS is on by default for modern SDK links"
+    },
+    {
+     "text": "A Boolean value indicating whether App Transport Security restrictions are disabled for all network connections.",
+     "locator": "NSAllowsArbitraryLoads — page abstract (definition line)",
+     "supports": "(b) what NSAllowsArbitraryLoads is"
+    },
+    {
+     "text": "Set this key’s value to `YES` to disable App Transport Security (ATS) restrictions for all domains not specified in the NSExceptionDomains dictionary. Domains you specify in that dictionary aren’t affected by this key’s value.",
+     "locator": "NSAllowsArbitraryLoads — Discussion (first paragraph)",
+     "supports": "(b) NSAllowsArbitraryLoads disables ATS globally except for NSExceptionDomains entries"
+    },
+    {
+     "text": "You must supply a justification during App Store review if you set the key’s value to `YES`, as described in `Provide Justification for Exceptions`. Use this key with caution because it significantly reduces the security of your app. In most cases, it’s better to upgrade your servers to meet the requirements imposed by ATS, or at least to use a narrower exception.",
+     "locator": "NSAllowsArbitraryLoads — \"Important\" aside in Discussion",
+     "supports": "(b)+(c) explicit warning plus App Store justification requirement for this key"
+    },
+    {
+     "text": "Disabling ATS means that unsecured HTTP connections are allowed. HTTPS connections are also allowed, and are still subject to default server trust evaluation, as described in `Ensure the Network Server Meets Minimum Requirements`. However, extended security checks—like requiring a minimum Transport Layer Security (TLS) protocol version—are disabled. Without ATS, you’re also free to loosen the default server trust requirements, as described in Performing manual server trust authentication.",
+     "locator": "NSAllowsArbitraryLoads — Discussion (second paragraph)",
+     "supports": "(b) concrete effect: unsecured HTTP allowed, extended TLS checks disabled"
+    },
+    {
+     "text": "In iOS 10 and later and macOS 10.12 and later, the value of the NSAllowsArbitraryLoads key is ignored—and the default value of `NO` used instead—if any of the following keys are present in your app’s Information Property List file:",
+     "locator": "NSAllowsArbitraryLoads — Discussion (third paragraph), followed by a list of NSAllowsArbitraryLoadsForMedia / NSAllowsArbitraryLoadsInWebContent / NSAllowsLocalNetworking",
+     "supports": "(b) important scoping caveat: key is silently ignored on iOS 10+ if a narrower global exception is also present"
+    },
+    {
+     "text": "Always look for ways to improve server security before adding ATS exceptions. Loosening ATS restrictions reduces the security of your app.",
+     "locator": "NSAppTransportSecurity — \"Important\" aside in Discussion",
+     "supports": "(b) Apple's warning against loosening ATS"
+    },
+    {
+     "text": "It’s always better to fix the server when faced with an ATS failure. Exceptions reduce the security of your app. Some also require justification when submitting an app to the App Store, as described in the next section.",
+     "locator": "Preventing Insecure Network Connections — \"Important\" aside in \"Configure Exceptions Only When Needed and Prefer Server Fixes\"",
+     "supports": "(c) some ATS exceptions require App Store justification"
+    },
+    {
+     "text": "Adding certain ATS exceptions to your app’s Information Property List file requires you to provide justification, and might trigger additional App Store review for your app. Exceptions that require justification are:",
+     "locator": "Preventing Insecure Network Connections — \"Provide Justification for Exceptions\" (opening sentence)",
+     "supports": "(c) justification requirement and possibility of additional review"
+    },
+    {
+     "text": "Arbitrary connection exceptions (NSAllowsArbitraryLoads)",
+     "locator": "Preventing Insecure Network Connections — \"Provide Justification for Exceptions\" (first bullet of the list of exceptions requiring justification)",
+     "supports": "(c) NSAllowsArbitraryLoads is explicitly named as requiring justification"
+    },
+    {
+     "text": "When submitting your app to the App Store, provide sufficient information for the App Store to determine why your app cannot make secure connections by default.",
+     "locator": "Preventing Insecure Network Connections — \"Provide Justification for Exceptions\" (closing paragraph)",
+     "supports": "(c) what the developer must supply at submission"
+    },
+    {
+     "text": "Always look for a way to avoid using exceptions as a first recourse. If you must use an exception, make it as limited in scope as possible.",
+     "locator": "Preventing Insecure Network Connections — final \"Important\" aside, end of \"Provide Justification for Exceptions\"",
+     "supports": "(c) Apple's guidance to minimize exception scope"
+    },
+    {
+     "text": "App Transport Security provides default connection requirements so that apps adhere to best practices for secure connections when using NSURLConnection, CFURL, or NSURLSession APIs.",
+     "locator": "Apple Platform Security — \"TLS security\" chapter, subsection \"App Transport Security\"",
+     "supports": "(a) ATS provides default secure-connection requirements (Platform Security guide wording)"
+    },
+    {
+     "text": "Network connections that don’t meet these requirements fail unless the app overrides App Transport Security. Invalid certificates always result in a hard failure and no connection. App Transport Security is automatically applied to apps that are compiled for iOS 9, iPadOS 13.1, OS X 10.11, tvOS 9, watchOS 2, visionOS 1, or later.",
+     "locator": "Apple Platform Security — \"TLS security\" chapter, subsection \"App Transport Security\" (final paragraph)",
+     "supports": "(a) non-conforming connections fail unless the app overrides ATS; ATS applies automatically by SDK"
+    }
+   ]
+  },
+  {
+   "key": "apple_keychain_secure_enclave",
+   "url": "https://developer.apple.com/documentation/security/storing-keys-in-the-keychain",
+   "version": "Apple Platform Security guide: PDF cover dated \"August 2026\"; \"Keychain data protection\" web page carries \"Published Date: December 19, 2024\". Developer documentation pages carry no version string (fetched 2026-10-25).",
+   "quotes": [
+    {
+     "text": "The keychain is the best place to store small secrets, like passwords and cryptographic keys.",
+     "locator": "developer.apple.com/documentation/security/storing-keys-in-the-keychain — \"Storing Keys in the Keychain\", Overview, opening sentence",
+     "supports": "(a) Apple's own words: the Keychain is the designated home for small secrets and cryptographic keys"
+    },
+    {
+     "text": "Securely store small chunks of data on behalf of the user.",
+     "locator": "developer.apple.com/documentation/security/keychain-services — page abstract (Keychain services collection page)",
+     "supports": "(a) one-line definition of what Keychain Services is for"
+    },
+    {
+     "text": "The keychain services API helps you solve this problem by giving your app a mechanism to store small bits of user data in an encrypted database called a keychain.",
+     "locator": "developer.apple.com/documentation/security/keychain-services — Overview, second paragraph",
+     "supports": "(a) the Keychain is an encrypted database for small user data"
+    },
+    {
+     "text": "Many apps need to handle passwords and other short but sensitive bits of data, such as keys and login tokens. The keychain provides a secure way to store these items.",
+     "locator": "Apple Platform Security, \"Keychain data protection\" — opening paragraph (web page; identical text at PDF p.101)",
+     "supports": "(a) Apple's Platform Security guide names keys and login tokens as Keychain residents"
+    },
+    {
+     "text": "Keychain items are encrypted using two different AES-256-GCM keys: a table key (metadata) and a per-row key (secret key).",
+     "locator": "Apple Platform Security, \"Keychain data protection\" → Overview, first sentence (PDF p.101)",
+     "supports": "(b) keychain items are encrypted with hardware-rooted AES-256-GCM keys"
+    },
+    {
+     "text": "The metadata key is protected by the Secure Enclave but is cached in the Application Processor to allow fast queries of the keychain. The secret key always requires a round trip through the Secure Enclave.",
+     "locator": "Apple Platform Security, \"Keychain data protection\" → Overview, second paragraph (PDF p.101)",
+     "supports": "(b) the per-item secret key is protected by, and only usable through, the Secure Enclave"
+    },
+    {
+     "text": "ACLs are evaluated inside the Secure Enclave and are released to the kernel only if their specified constraints are met.",
+     "locator": "Apple Platform Security, \"Keychain data protection\" → \"Keychain access control\" section",
+     "supports": "(b) access policy for a keychain item is enforced in hardware, not in app code"
+    },
+    {
+     "text": "Keeping a private key in a keychain is a great way to secure it. The key data is encrypted on disk and accessible only to your app or the apps you authorize.",
+     "locator": "developer.apple.com/documentation/security/protecting-keys-with-the-secure-enclave — Overview, first two sentences",
+     "supports": "(a)/(b) keychain-stored key data is encrypted at rest and scoped to your app"
+    },
+    {
+     "text": "The Secure Enclave is a hardware-based key manager that’s isolated from the main processor to provide an extra layer of security. When you protect a private key with the Secure Enclave, you never handle the plain-text key, making it difficult for the key to become compromised.",
+     "locator": "developer.apple.com/documentation/security/protecting-keys-with-the-secure-enclave — Overview, second paragraph",
+     "supports": "(b) Secure Enclave is a hardware key manager; the app never sees plaintext key material"
+    },
+    {
+     "text": "The Secure Enclave is isolated from the main processor to provide an extra layer of security and is designed to keep sensitive user data secure even when the Application Processor kernel becomes compromised.",
+     "locator": "Apple Platform Security, \"The Secure Enclave\" → Overview (PDF p.10)",
+     "supports": "(b) hardware isolation of key material from the main OS"
+    },
+    {
+     "text": "Can’t encode preexisting keys. You must use the Secure Enclave to create the keys. Not having a mechanism to transfer plain-text key data into or out of the Secure Enclave is fundamental to its security.",
+     "locator": "developer.apple.com/documentation/security/protecting-keys-with-the-secure-enclave — Overview, bulleted restriction list",
+     "supports": "(b) an already-existing (e.g. embedded) key cannot be imported into the Secure Enclave — it must be generated there"
+    },
+    {
+     "text": "You distribute the public key freely, but you keep the private key secret. One or both may be stored in a keychain for safekeeping.",
+     "locator": "developer.apple.com/documentation/security/generating-new-cryptographic-keys — \"Creating an Asymmetric Key Pair\", first paragraph",
+     "supports": "(a) Apple's prescribed resting place for a private key is a keychain"
+    },
+    {
+     "text": "You can’t rely on your app’s logic to perform security checks on itself because a compromised app can falsify the results.",
+     "locator": "developer.apple.com/documentation/devicecheck/establishing-your-app-s-integrity — Overview, opening sentence",
+     "supports": "(c) CLOSEST Apple gets: client-side app logic cannot be trusted on a compromised device — but this is about self-checking, NOT about hardcoded secrets, so it does not answer (c)"
+    }
+   ]
+  },
+  {
+   "key": "cryptojs-aes-ecb-verification",
+   "url": "https://cryptojs.gitbook.io/docs/master.md",
+   "version": "CryptoJS 4.2.0 (brix/crypto-js@develop, package.json \"version\": \"4.2.0\"); NIST SP 800-38A (2001, Acrobat Distiller 4.0); NIST FIPS 197-upd1; RFC 5652 (September 2009)",
+   "quotes": [
+    {
+     "text": "CryptoJS supports AES-128, AES-192, and AES-256. It will pick the variant by the size of the key you pass in. If you use a passphrase, then it will generate a 256-bit key.",
+     "locator": "CryptoJS Documentation, §\"The Cipher Algorithms\" → **AES**",
+     "supports": "(a) A 32-byte key selects AES-256 — the variant is chosen by key size"
+    },
+    {
+     "text": "For the key, when you pass a string, it's treated as a passphrase and used to derive an actual key and IV. Or you can pass a WordArray that represents the actual key. If you pass the actual key, you must also pass the actual IV.",
+     "locator": "CryptoJS Documentation, §\"The Cipher Input\"",
+     "supports": "(a) Utf8.parse yields a WordArray = the actual key, bypassing the passphrase KDF; and the doc's IV requirement is stated generically, not per-mode"
+    },
+    {
+     "text": "CryptoJS supports the following modes:\n\n* CBC (the default)\n* CFB\n* CTR\n* OFB\n* ECB\n\nAnd CryptoJS supports the following padding schemes:\n\n* Pkcs7 (the default)\n* Iso97971\n* AnsiX923\n* Iso10126\n* ZeroPadding\n* NoPadding",
+     "locator": "CryptoJS Documentation, §\"Block Modes and Padding\"",
+     "supports": "(c) ECB is an available mode and Pkcs7 an available padding; both are also the effective defaults for padding / non-default for mode"
+    },
+    {
+     "text": "var encrypted = CryptoJS.AES.encrypt(\"Message\", \"Secret Passphrase\", {\n  mode: CryptoJS.mode.CFB,\n  padding: CryptoJS.pad.AnsiX923\n});",
+     "locator": "CryptoJS Documentation, §\"Block Modes and Padding\" (code example)",
+     "supports": "(c) Exact API shape: mode/padding are properties of the options object, namespaced CryptoJS.mode.X and CryptoJS.pad.X"
+    },
+    {
+     "text": "var key = CryptoJS.enc.Hex.parse(\"000102030405060708090a0b0c0d0e0f\");\n\nvar iv = CryptoJS.enc.Hex.parse(\"101112131415161718191a1b1c1d1e1f\");\n\nvar encrypted = CryptoJS.AES.encrypt(\"Message\", key, { iv: iv });",
+     "locator": "CryptoJS Documentation, §\"Custom Key and IV\"",
+     "supports": "(a) Key is passed as a parsed WordArray; this example supplies an IV only because it uses the default CBC mode"
+    },
+    {
+     "text": "CryptoJS.mode.ECB = (function () {\n    var ECB = CryptoJS.lib.BlockCipherMode.extend();\n\n    ECB.Encryptor = ECB.extend({\n        processBlock: function (words, offset) {\n            this._cipher.encryptBlock(words, offset);\n        }\n    });",
+     "locator": "brix/crypto-js src/mode-ecb.js, lines 4-11 (entire file is 20 lines)",
+     "supports": "(b) ECB mode has no IV: the whole mode file never reads, stores, or references an IV; each block is passed straight to encryptBlock with no chaining"
+    },
+    {
+     "text": "keySize: 256/32",
+     "locator": "brix/crypto-js src/aes.js, line 202",
+     "supports": "(a) AES's declared keySize is 8 words = 256 bits, the maximum; this is the KDF default, while the actual variant used is derived at runtime"
+    },
+    {
+     "text": "var keySize = key.sigBytes / 4;\n\n            // Compute number of rounds\n            var nRounds = this._nRounds = keySize + 6;",
+     "locator": "brix/crypto-js src/aes.js, lines 89-92",
+     "supports": "(a) Key size in words is taken directly from the parsed key's sigBytes, and the round count follows from it — this is the mechanism by which key length selects AES-128/192/256"
+    },
+    {
+     "text": "cfg: Cipher.cfg.extend({\n            mode: CBC,\n            padding: Pkcs7\n        }),",
+     "locator": "brix/crypto-js src/cipher-core.js, §BlockCipher (lines ~437-440)",
+     "supports": "(c) Defaults are mode CBC and padding Pkcs7, so both must be set explicitly for ECB"
+    },
+    {
+     "text": "var Pkcs7 = C_pad.Pkcs7 = {",
+     "locator": "brix/crypto-js src/cipher-core.js, line 371",
+     "supports": "(c) CryptoJS.pad.Pkcs7 is defined in cipher-core.js (not a separate pad-pkcs7.js — no such file exists in src/), exposing pad and unpad"
+    },
+    {
+     "text": "var nPaddingBytes = blockSizeBytes - data.sigBytes % blockSizeBytes;",
+     "locator": "brix/crypto-js src/cipher-core.js, Pkcs7.pad (line ~391)",
+     "supports": "Pkcs7 always pads, appending a full block when input is already block-aligned"
+    },
+    {
+     "text": "The Electronic Codebook (ECB) mode is a confidentiality mode that features, for a given key, the assignment of a fixed ciphertext block to each plaintext block, analogous to the assignment of code words in a codebook.",
+     "locator": "NIST SP 800-38A, §6.1 \"The Electronic Codebook Mode\", p. 9",
+     "supports": "(d) ECB with a fixed key maps each plaintext block to a fixed ciphertext block — the determinism claim"
+    },
+    {
+     "text": "In ECB encryption, the forward cipher function is applied directly and independently to each block of the plaintext.",
+     "locator": "NIST SP 800-38A, §6.1, p. 9",
+     "supports": "(d) No chaining across blocks: identical plaintext blocks produce identical ciphertext blocks regardless of position"
+    },
+    {
+     "text": "In the ECB mode, under a given key, any given plaintext block always gets encrypted to the same ciphertext block. If this property is undesirable in a particular application, the ECB mode should not be used.",
+     "locator": "NIST SP 800-38A, §6.1, p. 9",
+     "supports": "(d) Identical ciphertext for identical plaintext blocks under a fixed key — the exact property the report relies on"
+    },
+    {
+     "text": "The input to the encryption processes of the CBC, CFB, and OFB modes includes, in addition to the plaintext, a data block called the initialization vector (IV), denoted IV.",
+     "locator": "NIST SP 800-38A, §5.3 \"Initialization Vectors\", p. 8",
+     "supports": "(b) ECB takes no IV — the standard enumerates IV-using modes as exactly CBC, CFB, OFB, omitting ECB (and CTR)"
+    },
+    {
+     "text": "The AES algorithm is capable of using cryptographic keys of 128, 192, and 256 bits to encrypt and decrypt data in blocks of 128 bits.",
+     "locator": "NIST FIPS 197-upd1, Announcement §3 \"Explanation\"",
+     "supports": "AES block size is 128 bits = 16 bytes, so ECB's dictionary unit is 16 bytes, not 8"
+    },
+    {
+     "text": "Some content-encryption algorithms assume the input length is a multiple of k octets, where k is greater than one.  For such algorithms, the input shall be padded at the trailing end with k-(lth mod k) octets all having value k-(lth mod k), where lth is the length of the input.",
+     "locator": "RFC 5652 (CMS), §6.3 \"Content-encryption Process\", p. 28",
+     "supports": "Pkcs7 is the PKCS#7/CMS padding scheme: n bytes each of value n, with a full block of padding when input is already a multiple of k"
+    },
+    {
+     "text": "The padding can be removed unambiguously since all input is padded, including input values that are already a multiple of the block size, and no padding string is a suffix of another.",
+     "locator": "RFC 5652, §6.3, p. 28",
+     "supports": "Pkcs7 appends a full 16-byte pad block when plaintext is block-aligned — confirmed empirically as 32B input -> 48B ciphertext"
+    }
+   ]
+  }
+ ],
+ "refuted": [
+  {
+   "key": "cn-crypto-standards-blockcipher-keymgmt",
+   "verdict": {
+    "source_key": "https://openstd.samr.gov.cn/bzgk/std/showGb?type=online&hcno=4F89D833626340B1F71068D25EAC737D",
+    "quote_is_verbatim": false,
+    "source_is_official": true,
+    "supports_claimed_use": false,
+    "verdict": "REFUTED",
+    "problems": [
+     "FATAL (locator): the cited URL is NOT the standard text. `showGb?type=online&hcno=4F89...` returns HTTP 302 -> `https://openstd.samr.gov.cn/bzgk/std/newGbInfo?hcno=4F89D833626340B1F71068D25EAC737D&refer=outter`. That page (24,078 bytes) is a metadata card only. Measured keyword counts on the fetched HTML: 九种=0, 电码本=0, 初始向量=0, 字典攻击=0, 一般建议=0, 附录=0, A.1.2=0, ECB=0, 范围=0, 工作模式=1 (only in the title line). Not one of the 9 GB/T 17964 quotes exists on the cited page. Every '第1章 范围（正文第1页）'-style locator is therefore unsupported by the citation as given.",
+     "FABRICATED METADATA DETAIL: the header asserts '代替GB/T 17964-2008'. The cited page's 备注 (remark) field is empty and the literal string '2008' appears 0 times in the fetched HTML. The supersession is true in fact (the official 2023 GM/Y guide confirms '2008 年第一次修订为 GB/T 17964-2008', and openstd's own search lists GB/T 17964-2008 as 废止), but it was not read from the cited source.",
+     "FULL TEXT IS SESSION-GATED, NOT FETCHABLE: the real body sits behind an image viewer. `showGb?type=online` with a valid JSESSIONID returns 40 `.page` divs whose content loads via `GET /bzgk/std/viewGbImg?fileName=<11 distinct blob ids>`. All 11 chunk fetches returned HTTP 302 with 0 bytes (and the browser session hit ERR_EMPTY_RESPONSE). So no agent could have read the body text through this URL by HTTP; the quotes were not obtained from the cited source.",
+     "MISATTRIBUTED QUOTE (GM/T 0054): the last quote's locator is 'oscca.gov.cn/app-zxfw/zxfw/bzgfcx.jsp 检索结果'. I fetched that page: 1,699 chars of visible text, and it contains zero occurrences of '0054', '规定了信息系统商用密码应用的基本要求', or '适用于指导、规范和评估'. Paging ?pageNo=1..8 returned an identical 9,968-byte page each time. The dedicated page oscca.gov.cn/sca/xxgk/2018-02/08/content_1029019.shtml carries only the title '信息系统密码应用基本要求' plus a date — no scope sentence. The quote is real in substance but exists at NEITHER cited location.",
+     "VERIFIED VERBATIM (good): 密码法 第八条 / 第二十四条 / 第二十七条 all match exactly against the official OSCCA text at https://www.oscca.gov.cn/sca/xxgk/2023-06/04/content_1057225.shtml. 商用密码管理条例 第三十八条 and 第三十九条 match exactly against the State Council gazette https://www.gov.cn/gongbao/2023/issue_10506/202306/content_6885266.html. The legal spine of the argument is sound.",
+     "VERIFIED VERBATIM (good): both GM/Y 5001-2021 quotes are exact. I downloaded the official PDF from gmbz.org.cn (http://www.gmbz.org.cn/file/2021-10-27/16ef88be-9607-4d39-af45-d936b9c21244.pdf, 214 pages, cover reads '2021 年 8 月' — confirming the '2021年8月' date claim) and extracted text. '该标准规定的 7 种工作模式...' sits on printed p.18; '当该算法用于保护数据的机密性时,应选取合适的工作模式...见 GB/T 17964-2008' sits on printed p.10. Page locators '18-19' and '10' are correct.",
+     "SELF-AWARE TRAP THE AGENT NAVIGATED CORRECTLY: GM/Y 5001-2021 describes GB/T 17964-**2008** (7 modes), not the 2021 edition (9 modes). The agent kept these separate ('7 种' for the guide, '九种' for the 2021 standard) instead of blending them. Credit where due.",
+     "CROSS-CHECKED, NOT REFUTED (2021 standard's 9-mode list): an official 2023 edition of the same guide, gmbz.org.cn/file/2023-12-12/a5b430b0-30a7-4845-bf32-cad9bb6a2005.pdf, states '该标准描述了 9 种分组密码算法的工作模式' and enumerates ECB/CBC/CFB/OFB/CTR/XTS/HCTR/BC/OFBNLF — matching the quoted 3.1 list. So the substance of that quote is almost certainly right even though it cannot be confirmed at the cited URL.",
+     "ANNEX STATUS CLAIM CONFIRMED: the agent labelled GB/T 17964 附录A as '资料性附录'. The official 2023 guide says verbatim '附录 A 是资料性附录，描述了各个工作模式的性质' — so that characterization is CORRECT, and the accompanying hedge ('措辞是一般建议不，且位于资料性附录A') is accurate and appropriately self-limiting.",
+     "ANNEX B STATUS CLAIM CONFIRMED: the agent called GB/T 39786 附录B a '资料性附录'. Official 2023 guide: '附录 B 是资料性附录，给出了密钥生存周期管理的要点陈述.' Correct — the non-normativity hedge is honest, not spin.",
+     "STRETCH RISK (GB/T 39786 8.4): the quoted sentence reads like an interpretive summary, not clause text — the '在应用和数据安全层面提出的要求中...' framing is narrative. Substance checks out (第三级 传输机密性=应, a designated high-risk item; 存储机密性=宜 — corroborated by 密评 study material), but the exact string was not found verbatim in any source I could reach, and the clause numbering '8.4（正文第7-8页）' is unconfirmed.",
+     "STRETCH RISK (GB/T 39786 第5章 a)): the sentence '信息系统中使用的密码算法应符合法律、法规的规定...' does appear on antpedia's GB/T 39786 page — but under the heading '与法规或其他标准的关系说明', which that site may have added itself rather than quoting the standard's 第5章 通用要求 a). Whether it is clause 5 a) is unverified; the locator may be wrong even though the sentence exists.",
+     "UNVERIFIED (2 quotes): '密钥可以在符合 GB/T 37092 的密码产品中产生是十分必要的' produced no verbatim hit anywhere I searched (only the neighbouring B.2 sentence was found, on a secondary cybersec-gd.cn page). '对于超过一个分组长度的明文一般建议不使用 ECB 工作模式' also produced no verbatim hit; searches returned only paraphrase-level corroboration ('ECB discouraged beyond one block'). Both may be genuine but are unconfirmed."
+    ],
+    "correction": "Correct characterization: this citation set is **substantively strong but procedurally fabricated at the locator level**. The cited URL resolves to a metadata card (`newGbInfo`) carrying only standard number, title, 现行 status, CCS L80 / ICS 35.030, 发布日期 2021-10-11, 实施日期 2022-05-01, and issuing bodies — with an EMPTY 备注. It contains none of the 9 GB/T 17964 body quotes, and it does not say '代替GB/T 17964-2008'. The standard's full text is served only as session-gated page images via `/bzgk/std/viewGbImg?fileName=...`, which returned 302/0 bytes on all 11 chunks. So the quotes were not, and could not have been, read from the cited URL; the '正文第N页' locators are asserted, not demonstrated. Independently verified as EXACT: 密码法 第八条/第二十四条/第二十七条 (oscca.gov.cn), 商用密码管理条例 第三十八条/第三十九条 (gov.cn gazette), and both GM/Y 5001-2021 passages with correct printed pages 10 and 18 (official gmbz.org.cn PDF). Independently CONFIRMED in substance (via the official 2023 edition of the same guide): the 9-mode list, '附录A 是资料性附录' for GB/T 17964, and '附录B 是资料性附录' for GB/T 39786 — the agent's non-normativity hedges are correct, not spin. Correctly handled: GM/Y 5001-2021 describes GB/T 17964-**2008** (7 modes); the agent did not blend that with the 2021 standard's 9 modes. Two misattributions/stretches to fix: (a) the GM/T 0054 scope quote is on neither cited page — bzgfcx.jsp has zero '0054' occurrences, and the dedicated OSCCA page carries only the title; (b) the GB/T 39786 '第5章 a)' quote appears on antpedia under a possibly site-added heading '与法规或其他标准的关系说明', so clause 5 a) is unverified; likewise the '8.4' wording reads as an interpretive summary rather than clause text. Two quotes remain unconfirmed verbatim: '密钥可以在符合 GB/T 37092 的密码产品中产生是十分必要的' and '对于超过一个分组长度的明文一般建议不使用 ECB 工作模式'. Recommended fix: re-cite the GB/T 17964 and GB/T 39786 body quotes as '原文未取得，转引自官方 GM/Y 5001（2023版）内容概要' or obtain the text via a licensed channel, and drop the '代替GB/T 17964-2008' clause from any claim attributed to this URL."
+   },
+   "claimed_quotes": [
+    {
+     "text": "本文件描述了九种分组密码算法的工作模式,给出了参数和方法。本文件适用于指导分组密码算法在加解密数据时的使用。本文件描述的工作模式仅适用于保护数据的机密性,不适用于保护数据的完整性。",
+     "locator": "GB/T 17964-2021 第1章 范围（正文第1页）",
+     "supports": "该标准规定九种模式且仅用于机密性、不用于完整性，故其中没有任何模式被批准用于完整性保护"
+    },
+    {
+     "text": "分组密码算法的使用方式,主要包括电码本工作模式、密文分组链接工作模式、密文反馈工作模式、输出反馈工作模式、计数器工作模式、带密文挪用的XEX可调分组密码工作模式、带泛杂凑函数的计数器工作模式、分组链接工作模式、带非线性函数的输出反馈工作模式等。",
+     "locator": "GB/T 17964-2021 3.1 分组密码算法工作模式（正文第1页）",
+     "supports": "该标准列举的九种模式明确包含电码本(ECB)，即ECB是被该标准规范的模式之一，未被排除"
+    },
+    {
+     "text": "分组密码算法的一种工作模式,其特征是将明文分组直接作为算法的输入,对应的输出作为密文分组。",
+     "locator": "GB/T 17964-2021 3.2 电码本工作模式 electronic codebook(ECB) operation mode（正文第1页）",
+     "supports": "ECB的规范定义：明文分组直接输入，结构上无IV、无链式、无随机化参数"
+    },
+    {
+     "text": "1) q 个明文分组 P1,P2,…,Pq 所组成的序列,每个分组都为 n 比特;2) 密钥 K,需要加解密操作方约定一致,长度由分组密码算法 E 决定。",
+     "locator": "GB/T 17964-2021 5.1 变量定义 a) 输入变量（正文第4页）",
+     "supports": "ECB的输入变量只有明文分组序列与密钥K，没有初始向量IV/随机数nonce这一输入项"
+    },
+    {
+     "text": "3) 初始向量 IV,需要加解密操作方约定一致,长度为 n 比特。",
+     "locator": "GB/T 17964-2021 6.1 变量定义 a) 输入变量（CBC模式，正文第5页）",
+     "supports": "对照条款：CBC把IV列为输入变量而ECB没有，说明IV要求是模式特定的，不是通用强制项"
+    },
+    {
+     "text": "逐个加密明文分组:C_i=E_K(P_i)  i=1,2,…,q。",
+     "locator": "GB/T 17964-2021 5.2 ECB的加密方式描述（正文第5页）",
+     "supports": "ECB加密公式为逐分组独立加密，无IV参与，是无IV要求的最直接规范依据"
+    },
+    {
+     "text": "相同的明文分组(使用相同的密钥)总是生成相同的密文分组,这使得它容易遭受“字典攻击”,这种字典是由对应的明文和密文分组构成的。",
+     "locator": "GB/T 17964-2021 附录A A.1.2 性质 c)（正文第19页）",
+     "supports": "标准自身承认ECB的确定性导致字典攻击，是官方对明文相等性泄漏的表述"
+    },
+    {
+     "text": "对于超过一个分组长度的明文一般建议不使用 ECB 工作模式。",
+     "locator": "GB/T 17964-2021 附录A A.1.2 性质（正文第19页）",
+     "supports": "标准对ECB唯一的否定性表述，但措辞是一般建议不，且位于资料性附录A而非规范性条款"
+    },
+    {
+     "text": "信息系统中使用的密码算法应符合法律、法规的规定和密码相关国家标准、行业标准的有关要求;",
+     "locator": "GB/T 39786-2021 第5章 通用要求 a)（正文第4页）",
+     "supports": "GB/T 39786-2021 不含任何禁用ECB的条文，只用一条通用要求把算法合规性回指到其他标准（即GB/T 17964等）"
+    },
+    {
+     "text": "在应用和数据安全层面提出的要求中，密码技术应保证重要数据在传输过程中的机密性，宜采用密码技术保证重要数据在存储过程中的机密性。",
+     "locator": "GB/T 39786-2021 8.4 应用和数据安全（第三级，正文第7-8页）",
+     "supports": "第三级对传输机密性用应、对存储机密性用宜；标准通篇只要求机密性/完整性目标，不规定必须用哪种工作模式"
+    },
+    {
+     "text": "密钥不以明文方式存储在密码产品外部是十分必要的,并采取严格的安全防护措施,防止密钥被非授权的访问或篡改。",
+     "locator": "GB/T 39786-2021 附录B B.2 c) 密钥存储（正文第14页）",
+     "supports": "这是最接近客户端硬编码密钥问题的条款：要求密钥不得以明文存于密码产品外部；但它是资料性附录B的建议，且约束对象是密码产品外部存储，未直接写客户端代码"
+    },
+    {
+     "text": "密钥可以在符合 GB/T 37092 的密码产品中产生是十分必要的",
+     "locator": "GB/T 39786-2021 附录B B.2 a) 密钥产生（正文第14页）",
+     "supports": "密钥应在合规密码产品内产生——客户端App内硬编码常量密钥不满足此建议"
+    },
+    {
+     "text": "应具备密码应用安全管理制度,包括密码人员管理、密钥管理、建设运行、应急处置、密码软硬件及介质管理等制度;",
+     "locator": "GB/T 39786-2021 8.5 管理制度 a)（第三级，正文第8页）",
+     "supports": "第三级把密钥管理作为管理制度的必备项，属规范性应条款"
+    },
+    {
+     "text": "应根据密码应用方案,确定系统涉及的密钥种类、体系及其生存周期环节,各环节密钥管理要求参照附录B;",
+     "locator": "GB/T 39786-2021 8.7 建设运行 b)（第三级，正文第8页）",
+     "supports": "规范性条款把密钥全生命周期管理指向附录B，使附录B成为事实上的执行依据"
+    },
+    {
+     "text": "法律、行政法规和国家有关规定要求使用商用密码进行保护的关键信息基础设施,其运营者应当使用商用密码进行保护,自行或者委托商用密码检测机构开展商用密码应用安全性评估。",
+     "locator": "中华人民共和国密码法 第二十七条（2019-10-26通过）",
+     "supports": "密码法只规定关基运营者应使用商用密码并做密评，全法无任何关于分组密码工作模式或客户端密钥的技术条款"
+    },
+    {
+     "text": "商用密码用于保护不属于国家秘密的信息。公民、法人和其他组织可以依法使用商用密码保护网络与信息安全。",
+     "locator": "中华人民共和国密码法 第八条",
+     "supports": "政府App的业务数据属非国家秘密，落入商用密码范畴，因此适用GB/T 39786系列而非核心/普通密码要求"
+    },
+    {
+     "text": "商用密码从业单位开展商用密码活动,应当符合有关法律、行政法规、商用密码强制性国家标准以及该从业单位公开标准的技术要求。",
+     "locator": "中华人民共和国密码法 第二十四条",
+     "supports": "法律层面只强制商用密码强制性国家标准；GB/T 39786与GB/T 17964均为推荐性(GB/T)，不具强制力"
+    },
+    {
+     "text": "法律、行政法规和国家有关规定要求使用商用密码进行保护的关键信息基础设施,其运营者应当使用商用密码进行保护,制定商用密码应用方案,配备必要的资金和专业人员,同步规划、同步建设、同步运行商用密码保障系统,自行或者委托商用密码检测机构开展商用密码应用安全性评估。",
+     "locator": "商用密码管理条例 第三十八条（国务院令第760号）",
+     "supports": "条例把密码法第二十七条具体化为三同步+密评义务，仍未涉及工作模式或客户端密钥"
+    },
+    {
+     "text": "法律、行政法规和国家有关规定要求使用商用密码进行保护的关键信息基础设施,使用的商用密码产品、服务应当经检测认证合格,使用的密码算法、密码协议、密钥管理机制等商用密码技术应当通过国家密码管理部门审查鉴定。",
+     "locator": "商用密码管理条例 第三十九条",
+     "supports": "条例把密码算法与密钥管理机制纳入审查鉴定对象，是密钥管理受监管的行政法规依据"
+    },
+    {
+     "text": "该标准规定的 7 种工作模式,需要使用者事先约定密钥。在未更新密钥的情况下,为保障应用安全,使用者在每次加密消息前应选择新的初始向量(IV)或调柄(tweak),确保计数序列无重复无交叉。",
+     "locator": "GM/Y 5001-2021 密码标准使用指南, 第18-19页 (三)算法使用 1. GB/T 17964 使用注意事项",
+     "supports": "官方指南要求每次加密换新IV/tweak，但未点名ECB；对无IV的ECB该要求无法满足，属间接推论而非明文禁令"
+    },
+    {
+     "text": "当该算法用于保护数据的机密性时,应选取合适的工作模式,例如 CBC、CFB、OFB、CTR、BC、OFBNLF 等工作模式,见 GB/T 17964-2008;",
+     "locator": "GM/Y 5001-2021 密码标准使用指南, 第10页 (SM4 应用说明·使用注意事项)",
+     "supports": "官方指南举例推荐模式时列了CBC/CFB/OFB/CTR/BC/OFBNLF，唯独不列ECB，是最强的官方不推荐ECB旁证，但仍是举例而非禁止清单"
+    },
+    {
+     "text": "该标准规定了信息系统商用密码应用的基本要求。适用于指导、规范和评估信息系统中的商用密码应用。",
+     "locator": "国家密码管理局 标准规范查询 GM/T 0054 条目（oscca.gov.cn/app-zxfw/zxfw/bzgfcx.jsp 检索结果）",
+     "supports": "GM/T 0054-2018 的官方范围摘要，仅此一句；其条文原文未能从权威源取得"
+    }
+   ]
+  }
+ ],
+ "unverifiable": []
+}

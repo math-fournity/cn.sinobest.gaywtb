@@ -46,7 +46,7 @@
 
 | # | 主张 | 证据强度 | 详见 |
 |---|---|---|---|
-| **A1** | 一把 **AES-256 密钥明文硬编码在 H5 层**，用于加密**登录密码、手机号、验证码**；模式 **ECB**（无 IV） | 代码级（纯文本 JS） | §2 |
+| **A1** | 一把 **AES-256 密钥明文硬编码在 H5 层**，用于加密**登录密码、手机号、验证码**；模式 **ECB**（无 IV） | 代码级（纯文本 JS） | §2 · [依据](analysis/04-规范依据.md) |
 | **A2** | 同一把密钥服务**三个业务入口**：登录（加密 password）、重置密码、修改密码（各加密三字段） | 代码级（逐 effect 核对） | §2 |
 | **A3** | **全局关闭 ATS**（`NSAllowsArbitraryLoads=true`，无任何更窄的键）⇒ 允许明文 HTTP，**并移除 TLS 1.2 下限、前向保密要求、证书强度检查** | 配置级 + Apple 文档 | §3 · [深度](analysis/01-ATS-深度调查.md) |
 | **A4** | 包内含云从 SDK **自述测试密钥**，且被 `checkKey:` **实际取用** | 指令级（xref 经 `__cfstring`，对照 PASS） | §4 |
@@ -77,6 +77,7 @@
 | [**01 · ATS 深度调查**](analysis/01-ATS-深度调查.md) | ATS 是不是美国人的私货？关掉它到底关掉了什么？「密码主权」抗辩成立吗？ |
 | [**02 · 方法论与自我推翻记录**](analysis/02-方法论与自我推翻记录.md) | 这次调查怎么做的？我们犯了哪些错、怎么发现的、转化成了什么判据？ |
 | [**03 · ECB 工作模式**](analysis/03-ECB-工作模式.md) | AES-256 到底有没有问题？为什么密钥长度救不了 ECB？ |
+| [**04 · 规范依据**](analysis/04-规范依据.md) | 每条「不应该」的原文出处与引用边界；**含一条被驳回的引用** |
 
 ### 可运行代码
 
@@ -159,6 +160,15 @@ Q = e => {
 **`encryption:"1"` 的含义**：后两个入口在请求体显式携带该标记，表明**服务端按约定
 识别并解密该模式**——「客户端藏钥」是该应用的**设计选择**，不是工程疏漏。
 
+**为什么「一把钥服务三个入口」本身就是问题**——NIST SP 800-57 §5.5.2 原文：
+
+> "A key management system should be designed … so that **the compromise of a single
+> key compromises as little data as possible**. … The intent is to avoid building a
+> system with **catastrophic weaknesses**."
+
+本 App 的情形：一把钥、公开在包里、服务登录/重置/修改密码三条链。按 NIST 的表述，
+这正是它要避免的「单点失效导致全盘失效」形态。
+
 ### 2.3 最强替代假说已排除：这不是 SSL pinning
 
 | 判别维度 | 若为 pinning 应见 | 本 App 实测 |
@@ -210,6 +220,39 @@ NIST SP 800-38A §6.1 原文：
 > 另：该文件全文**不含** "diffusion"/"short" 等表述（独立验证者全文 grep 零命中），
 > 「ECB 缺乏扩散」是教科书通说，**不挂在该文件名下**。
 
+### 2.6 硬编码密钥：OWASP 的判定是「发现即失败」
+
+比 ECB 更直接的规范依据，是 OWASP MASTG 的 **iOS 专用**测试项：
+
+> **MASTG-TEST-0213**（*Use of Hardcoded Cryptographic Key*，iOS）
+> 判定标准：*"**The test case fails if calls to cryptographic functions with
+> hardcoded keys are found within binary.**"*
+
+> **MASVS-CRYPTO-2**：*"The app performs key management according to industry best
+> practices."* —— 说明：*"Even the strongest cryptography would be compromised by poor
+> key management."*
+
+**本 App 精确命中**：`Utf8.parse("385f33cb…")` 直接作为 `AES.encrypt` 的密钥参数，
+既是「binary 中带硬编码密钥的密码学调用」，也是「密钥管理不符合最佳实践」。
+**这不是「建议改进」，是判定失败。**
+
+### 2.7 正面答案：密钥应该放哪
+
+只说不该硬编码是不够的，必须答「该怎样」：
+
+> Apple 官方：*"**The keychain is the best place to store small secrets, like
+> passwords and cryptographic keys.**"*
+>
+> *"The secret key always requires a round trip through the **Secure Enclave**."*
+>
+> *"When you protect a private key with the Secure Enclave, **you never handle the
+> plain-text key**."*
+
+**对照本 App**：密钥以明文写在 H5 文件里，**既不在 Keychain，也不在 Secure Enclave，
+甚至不在 native 层**——它就是一段纯文本，`grep` 即得。
+
+> 完整引文与出处：[**04 · 规范依据**](analysis/04-规范依据.md)
+
 ---
 
 ## 3. A3：全局关闭 ATS
@@ -241,6 +284,16 @@ NIST SP 800-38A §6.1 原文：
 | **证书强度检查** | 可接受更弱证书 |
 
 **证书校验仍在**（无效证书仍是硬失败）——移除的是**护栏**，不是**校验**。
+
+Apple 对这一个键的原文警告：
+
+> "**You must supply a justification during App Store review if you set the key's
+> value to `YES`** … Use this key with caution because **it significantly reduces the
+> security of your app**. In most cases, it's better to upgrade your servers to meet
+> the requirements imposed by ATS, or at least to use a narrower exception."
+
+**Apple 自己说这个键「显著降低应用安全性」，且要求开发者提交理由。**
+本 App 用的是**最宽的全局开关**，不是任何一项窄例外。
 
 ### 3.2 生产流量实际走 HTTPS
 
@@ -509,7 +562,8 @@ EOF
 | 1.0 | 2026-10-25 | 首版 |
 | 1.1 | 2026-10-25 | 撤回 A5（Base64 字母表非密钥）；修正 A2（三字段属重置/修改密码）；补 A4 指令级证据 |
 | 1.2 | 2026-10-25 | 新增 ECB 人话讲解；新增明文 HTTP 成因分析；新增主权抗辩检验 |
-| **1.3** | 2026-10-25 | **重构为「综述 + 索引」**：深度内容拆为 `analysis/`（ATS 深度调查、方法论与自我推翻记录、ECB 工作模式），可运行代码入 `code/`，原始证据入 `evidence/`；**修正 A3**（关 ATS 不止放行明文，还移除 TLS 1.2 下限/PFS/证书强度检查） |
+| **1.4** | 2026-10-25 | 补入 7 份经对抗复核的规范原文（新增 [04 · 规范依据](analysis/04-规范依据.md)）：**MASTG-TEST-0213（iOS 硬编码密钥，判定为「发现即失败」）**、SP 800-57 §5.5.2（单钥影响面）、Apple「显著降低应用安全性」警告、Keychain/Secure Enclave 正面答案；**记录一条被驳回的引用**（GB/T 17964 正文取不到，locator 不可演示） |
+| 1.3 | 2026-10-25 | **重构为「综述 + 索引」**：深度内容拆为 `analysis/`（ATS 深度调查、方法论与自我推翻记录、ECB 工作模式），可运行代码入 `code/`，原始证据入 `evidence/`；**修正 A3**（关 ATS 不止放行明文，还移除 TLS 1.2 下限/PFS/证书强度检查） |
 
 ---
 
