@@ -272,7 +272,7 @@ Android 篇已有公安部研究所名录
 | App | 对称 ECB 变换名（dex 级） | 有无壳 |
 |---|---|---|
 | **交管12123**（19 个历史版本） | `AES/ECB/NoPadding`、`AES/ECB/PKCS5Padding` | **有壳** |
-| **《国家网络身份认证》** | `SM4/ECB/PKCS5PADDING` | **有壳** |
+| **《国家网络身份认证》**（[Android 篇](https://github.com/math-fournity/cn.cyberIdentity.certification)） | `SM4/ECB/PKCS5PADDING` | **有壳** |
 | **电子证件**（`com.ctid.open`） | `AES/ECB/PKCS5Padding`、`AES/ECB/PKCS7Padding` | 无壳 |
 | **国家政务服务平台** | `AES/ECB/NoPadding`、`AES/ECB/PKCS5Padding` | 无壳 |
 | **公安110**（`chinaonekey`） | `AES/ECB/PKCS5Padding` | 无壳 |
@@ -281,6 +281,10 @@ Android 篇已有公安部研究所名录
 **11 个不同 App 中，5 个有 AES/SM4 对称 ECB 的 dex 级痕迹。**
 
 ### 5.1b 重要修正：《国家网络身份认证》的 ECB **是真实调用**（指令级已证）
+
+> 该 App 的 Android 版调查已公开发布：
+> [**https://github.com/math-fournity/cn.cyberIdentity.certification**](https://github.com/math-fournity/cn.cyberIdentity.certification)
+> （本文引用其 Android 侧结论时，均标注为「Android 篇」）
 
 §5.1 的表格把《国家网络身份认证》列为「有壳，证不了调用」。**这条要修正。**
 
@@ -333,7 +337,7 @@ DES-ECB 6 处、AES-ECB 1 处、算法运行期决定 2 处。
 | 之前 | 现在 |
 |---|---|
 | 《国家网络身份认证》「有壳，ECB 调用未证」 | **native 层 9 处 ECB 调用点，指令级已证** |
-| 「5 个 App 含 ECB 变换名，但实际调用未证」 | **至少 1 个（NIA）已证实际调用** |
+| 「5 个 App 含 ECB 变换名，但实际调用未证」 | **至少 1 个（《国家网络身份认证》）已证实际调用** |
 
 **⇒ 命题从「本样本不支持」修正为「至少有 1 个公安部系 App 在 native 层实际调用 ECB」。**
 
