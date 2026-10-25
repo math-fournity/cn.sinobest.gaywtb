@@ -35,8 +35,13 @@ import sys
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # ── 事实基准：这里的值是"唯一真值"，其他文件必须与之相符 ──────────────
-FULL_KEY = "REDACTED"   # 不得出现（只允许脱敏形式）
-MASKED_KEY = "385f33cb…9081ab7"                  # 允许的形式
+#
+# ⚠️ 完整密钥**不写进本文件**——那本身就是泄漏。
+# 检查逻辑改为「结构性检测」：找出任何形如 32 位连续 hex、且出现在密钥上下文里的串。
+# 这样既不用把密钥抄进来，又能抓住泄漏。
+MASKED_KEY = "385f33cb…9081ab7"                  # 唯一允许的形式
+MASKED_PREFIX = "385f33cb"                        # 脱敏形式的前缀
+MASKED_SUFFIX = "9081ab7"                         # 脱敏形式的后缀
 IPA_SHA256 = "d46aaec36700a85b5d1a14834d46e645e145149c8416d94aa294b5975f84f3ad"
 SAMPLE_VERSION = "1.2.28"
 DAYS_EXPOSED = "1069"
@@ -63,18 +68,52 @@ def read(path: str) -> str:
 
 
 def check_key_not_leaked(files: list[str]) -> None:
-    """完整密钥不得出现在任何被跟踪文件里。"""
+    """完整密钥不得出现在任何被跟踪文件里。
+
+    ## 判据设计的三次失败（记录在此，避免后人重蹈）
+
+    1. **首版：把完整密钥写死在本脚本里做比对** —— 脚本自己就成了泄漏源。
+       一致性检查报出「tools/consistency_check.py 里有完整密钥」，非常讽刺但真实。
+    2. **二版：结构检测（32 hex + 附近有 key 字样）** —— 误报 9 处，
+       全是密文示例（本报告演示 ECB 用的）、业务记录 ID（政务业务卡片主键）、
+       NIST 测试向量。这些在形态上与密钥无法区分。
+    3. **三版：收窄到「32 位可打印字符 + 含数字含 a-f」** —— 仍误报 4 处，
+       原因同上：密文和哈希也是这个形态。
+
+    ## 最终方案：指纹式匹配，密钥不进代码
+
+    不判断「像不像密钥」，而是判断「是不是那一把」——
+    用密钥的**前 8 位 + 后 7 位**做联合匹配（这两个片段本身不构成密钥，
+    无法用于解密，但足以唯一定位）。中间 17 位不写进本文件。
+    """
+    # 前 8 位与后 7 位（截断形式，不构成可用密钥）
+    head = MASKED_PREFIX          # "385f33cb"
+    tail = MASKED_SUFFIX          # "9081ab7"
+
+    # 允许出现的形态：head + "…" + tail（脱敏）
+    ALLOWED = f"{head}…{tail}"
+
     hits = []
     for f in files:
-        if FULL_KEY in read(f):
-            hits.append(f)
+        if f == "tools/consistency_check.py":
+            continue
+        t = read(f)
+        for line_no, line in enumerate(t.splitlines(), 1):
+            if head in line and tail in line:
+                # 同一行里前后缀都出现，且不是脱敏形式 → 可疑
+                # 去掉所有脱敏形式后，若 head/tail 仍在同一行 → 可能是完整密钥
+                stripped = line.replace(ALLOWED, "")
+                if head in stripped and tail in stripped:
+                    hits.append(f"{f}:{line_no}")
+
     if hits:
+        detail = "\n    ".join(hits[:8])
         errors.append(
-            f"完整密钥泄漏在 {len(hits)} 个文件里：\n    " + "\n    ".join(hits)
+            f"疑似完整密钥（前后缀同行且非脱敏形式）{len(hits)} 处：\n    {detail}"
         )
     else:
-        n_masked = sum(read(f).count(MASKED_KEY) for f in files)
-        print(f"  ✓ 密钥：完整形式 0 处，脱敏形式 {n_masked} 处")
+        n_masked = sum(read(f).count(ALLOWED) for f in files)
+        print(f"  ✓ 密钥：无完整形式，脱敏形式 {n_masked} 处")
 
 
 def check_number_consistency(files: list[str]) -> None:
