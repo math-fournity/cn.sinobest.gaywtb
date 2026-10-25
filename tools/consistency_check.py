@@ -44,7 +44,7 @@ MASKED_PREFIX = "385f33cb"                        # 脱敏形式的前缀
 MASKED_SUFFIX = "9081ab7"                         # 脱敏形式的后缀
 IPA_SHA256 = "d46aaec36700a85b5d1a14834d46e645e145149c8416d94aa294b5975f84f3ad"
 SAMPLE_VERSION = "1.2.28"
-DAYS_EXPOSED = "1069"
+DAYS_EXPOSED = "1070"
 SELF_RETRACTIONS = "6"
 
 errors: list[str] = []
