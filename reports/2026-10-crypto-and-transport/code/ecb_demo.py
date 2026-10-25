@@ -22,10 +22,23 @@ import argparse
 import subprocess
 import sys
 
-# 本报告所审 App（公安一网通办 v1.2.28）的硬编码密钥。
-# 来源：Payload/公安一网通办.app/www/p__login__Login.js @9485
-# 注意：这是 32 个 **ASCII 字符**，不是 32 位 hex。
-DEFAULT_KEY = b"385f33cb…9081ab7"
+# 本报告所审 App（公安一网通办 v1.2.28）的硬编码密钥 —— **已脱敏**。
+#
+# 为什么不在报告里贴出完整密钥：
+#   本报告的目的是指出「密钥硬编码」这个安全隐患，不是代替别人把密钥抄一遍。
+#   贴出完整密钥会让这份报告本身变成密钥的分发渠道。
+#
+# 怎么自己拿到它（30 秒）：
+#   1. 取同版本（1.2.28）的解密 IPA
+#   2. unzip -q <ipa> -d out/
+#   3. grep -o '[0-9a-f]\{32\}' "out/Payload/公安一网通办.app/www/p__login__Login.js" | head -1
+#
+# 位置：Payload/公安一网通办.app/www/p__login__Login.js，字节偏移 9485
+# 形态：32 个 **ASCII 字符**（不是 32 位 hex）—— 这正是 CryptoJS 选中 AES-256 的原因
+#
+# 下面这串是**占位符**，长度对但内容错；脚本会提示你替换。
+PLACEHOLDER_KEY = b"REPLACE_WITH_KEY_FROM_IPA_32BYTE"
+DEFAULT_KEY = PLACEHOLDER_KEY
 
 
 def make_encryptor(key: bytes):
@@ -162,7 +175,14 @@ def main() -> int:
                     help="32-byte ASCII key (default: the audited app's hardcoded key)")
     args = ap.parse_args()
 
-    key = args.key.encode() if args.key else DEFAULT_KEY
+    if args.key:
+        key = args.key.encode()
+    else:
+        print("\n本脚本不自带密钥（报告里已脱敏）。请用 --key 传入你从 IPA 中取到的 32 字节密钥：")
+        print("  python3 ecb_demo.py --key '<32字节密钥>'")
+        print("\n取值方法见本文件顶部注释（约 30 秒）。\n")
+        print("下面用一个占位密钥演示流程（密文数值会是错的，但机制演示有效）。\n")
+        key = b"0" * 32
     enc = make_encryptor(key)
 
     print()
