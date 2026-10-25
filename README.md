@@ -232,10 +232,32 @@ python3 reports/2026-10-crypto-and-transport/code/xref_check.py \
 
 ---
 
+## 作者
+
+**Math Fournity**、**Step-5-Preview**、**GLM-5.3**、**Deepseek-V4.1-Flash**（AI 协作研究）
+
 ## 引用
 
-引用请注明所核验样本的 SHA-256 与版本，并区分本报告的主张与被引规范的主张。
-详见 [CITATION.cff](CITATION.cff)。
+本 repo 提供 [`CITATION.cff`](CITATION.cff)（GitHub 会在仓库首页显示"引用本仓库"按钮，
+引用信息以该文件为准）。BibTeX：
+
+```bibtex
+@misc{gaywtb-audit-2026,
+  author       = {Math Fournity and Step-5-Preview and GLM-5.3 and Deepseek-V4.1-Flash},
+  title        = {「公安一网通办」iOS App（cn.sinobest.gaywtb v1.2.28）
+                  密码学使用与传输安全调查报告},
+  year         = {2026},
+  month        = {10},
+  howpublished = {\url{https://github.com/math-fournity/cn.sinobest.gaywtb}},
+  note         = {静态分析；IPA SHA-256
+                  d46aaec36700a85b5d1a14834d46e645e145149c8416d94aa294b5975f84f3ad}
+}
+```
+
+引用规范要求：注明出处（作者 + URL + 版本日期），并**同时注明所核验的 IPA 指纹**——
+本 repo 的结论仅对上述指纹的样本负责。
+
+同时请区分**本报告的主张**与**被引规范的主张**（见报告 §10 引用规范）。
 
 ## 许可
 
