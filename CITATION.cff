@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+title: >-
+  「公安一网通办」iOS App（cn.sinobest.gaywtb v1.2.28）密码学使用与传输安全调查报告
+message: >-
+  引用本报告时请注明出处，并声明所核验的 IPA 指纹（SHA-256
+  d46aaec36700a85b5d1a14834d46e645e145149c8416d94aa294b5975f84f3ad）。
+type: report
+authors:
+  - name: Math Fournity
+    email: math-fournity@proton.me
+  - name: Step-5-Preview
+  - name: GLM-5.3
+abstract: >-
+  对「公安一网通办」iOS 客户端的独立静态安全调查。发现：登录与修改密码两条
+  独立业务链，均把手机号、验证码、密码三字段用硬编码在 H5 层的 AES-256 密钥
+  加密后上传，工作模式为 ECB（无 IV，同一明文恒产生同一密文）；同一把密钥
+  同时服务于登录与改密；应用全局关闭 App Transport Security
+  （NSAllowsArbitraryLoads=true，无域名例外白名单）；包内另含云从 SDK 自述
+  测试密钥 cw_test_aes_key_ / cw_test_sm4_key_，以及一枚 48 字节 Base64
+  密钥材料（用途未证）。所有主张均落到可复算的文件与字节偏移，仅用公开工具
+  即可独立复核。报告同时明确列出不主张的事项，包括「无加固壳」本身不构成
+  OWASP MASVS 违规、明文 HTTP 端点实为配置中的测试地址。
+keywords:
+  - 安全调查
+  - iOS
+  - AES-256
+  - ECB 工作模式
+  - 硬编码密钥
+  - App Transport Security
+  - 公安一网通办
+  - 政务服务
+license: CC-BY-4.0
+date-released: "2026-10-25"
+version: "1.0"
+language: zh
