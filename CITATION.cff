@@ -10,6 +10,7 @@ authors:
     email: math-fournity@proton.me
   - name: Step-5-Preview
   - name: GLM-5.3
+  - name: Deepseek-V4.1-Flash
 abstract: >-
   对「公安一网通办」iOS 客户端的独立静态安全调查。发现：一把 AES-256 密钥以
   明文硬编码在 H5 层，用于加密用户的登录密码、手机号与验证码，工作模式为
