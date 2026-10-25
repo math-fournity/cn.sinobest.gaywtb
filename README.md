@@ -128,6 +128,10 @@ currentVersionReleaseDate = 2023-11-20T20:49:23Z
 | **IPA SHA-256** | `d46aaec36700a85b5d1a14834d46e645e145149c8416d94aa294b5975f84f3ad` |
 | 架构 | Cordova 混合（native 主二进制 4,659,328 B + `www/` 310 个 H5 资源） |
 
+**消歧义**：本 repo 中的「云从」仅指**云从科技集团股份有限公司**（科创板 688327）；
+巴西金融科技公司 CloudWalk（cloudwalk.io）与本案无关。
+「中科江南」指**北京中科江南信息技术股份有限公司**（创业板上市）。
+
 > **样本口径**：解密 dump 重打包 IPA（`cryptid=0`、无 `embedded.mobileprovision`）。
 > 本 repo **不主张**任何关于 Apple FairPlay 加密或 App Store 分发链路的内容，
 > 只对上表 SHA-256 负责，**不自动适用于其他版本**。
@@ -168,6 +172,24 @@ currentVersionReleaseDate = 2023-11-20T20:49:23Z
 | A5 | ECB 的三种后果（同明文同密文 / 枚举字段可还原 / 结构泄露）在**本 App 的真实密钥与模式**下可复现 | 机制级（可运行演示） |
 
 ---
+
+## 复现
+
+仅依赖公开工具（`unzip` / `grep` / `plutil` / `python3` 标准库 / `otool`），
+逐步命令见[报告 §9](reports/2026-10-crypto-and-transport/report.zh.md#9-复现指南)。
+例如密钥定位：
+
+```bash
+unzip -q cn.sinobest.gaywtb-1.2.28-Decrypted.ipa -d out/
+grep -o '[0-9a-f]\{32\}' \
+  "out/Payload/公安一网通办.app/www/p__login__Login.js" | head -1
+```
+
+## 报告目录
+
+| 目录 | 内容 |
+|---|---|
+| [`reports/2026-10-crypto-and-transport/`](reports/2026-10-crypto-and-transport/report.zh.md) | **2026-10：密码学使用与传输安全调查报告**（公开版，中文）——四项主张 + 跨端发现、逐项文件与字节偏移、规范原文引用、责任归属、明确不主张清单、公开工具复现指南，另附 8 篇深度专题与 2 个可运行脚本 |
 
 ## 目录结构
 
@@ -261,4 +283,17 @@ python3 reports/2026-10-crypto-and-transport/code/xref_check.py \
 
 ## 许可
 
-报告文本：CC-BY-4.0。详见 [LICENSE](LICENSE)。
+本 repo 的**报告文本与文档**采用
+[Creative Commons Attribution 4.0 International (CC BY 4.0)](LICENSE) 许可：
+允许任何媒介复制、再发行、修改与商业使用，条件是署名（见 LICENSE 全文）。
+代码片段（复现命令与 `code/` 下的脚本）按 CC BY 4.0 一并许可。
+
+## 边界与免责声明
+
+- 调查方式为**静态分析**：未运行该 App、未接触其任何服务器、未申请任何账户；
+- **不公开完整密钥**，只公开其位置与取法（见 [08 号文档](reports/2026-10-crypto-and-transport/analysis/08-本报告的界限与责任.md)）；
+- **不含任何安装包或解包产物**——本 repo 只有报告、脚本与机读证据；
+- 未决事项（运行期调用占比、服务端防重放、更早版本是否同样）在报告 §8 如实列出，
+  结论不越证据边界；
+- 责任归属依据静态证据与公开工商信息，**最终认定权在相关监管与司法机构**；
+- 本 repo 仅用于安全改进与学术研究目的。
